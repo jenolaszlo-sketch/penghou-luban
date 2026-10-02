@@ -141,4 +141,4 @@ Use Luna for bounded provider/test work where possible and review cross-project
 identity/native consistency changes at each gate. Publish support only after
 matching conformance; package publication is a separate decision.
 
-Current Luban qualification: 336 tests pass on each of net8.0 and net10.0 against candidate IO packages. Published IO adoption remains RA-5C. Optional Hufu integration evidence and remaining host-specific gates belong in Hufu documentation.
+Current Luban qualification: 337 tests pass on each of net8.0 and net10.0 against candidate IO packages. Published IO adoption remains RA-5C. Optional Hufu integration evidence and remaining host-specific gates belong in Hufu documentation.

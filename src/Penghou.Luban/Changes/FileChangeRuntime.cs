@@ -226,7 +226,11 @@ public sealed class FileChangeRuntime
                 { computed = Empty(FileChangeStatus.InvalidInput); }
                 var resultIdentity = computed.ResultIdentity ?? ComputeResultIdentity(operation, computed.Status,
                     snapshots, computed.Candidates, computed.Conflicts);
-                if (RetainedBytes(computed.Candidates) > limits.MaxTotalRetainedBytes)
+                var retained = RetainedBytes(computed.Candidates);
+                foreach (var conflict in computed.Conflicts)
+                    retained = checked(retained + StrictUtf8.GetByteCount(conflict.BaseText) +
+                        StrictUtf8.GetByteCount(conflict.OursText) + StrictUtf8.GetByteCount(conflict.TheirsText));
+                if (retained > limits.MaxTotalRetainedBytes)
                 {
                     computed = Empty(FileChangeStatus.LimitExceeded);
                     resultIdentity = ComputeResultIdentity(operation, computed.Status, snapshots, null, null);

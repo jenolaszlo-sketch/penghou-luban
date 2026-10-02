@@ -134,6 +134,23 @@ public sealed class FileChangeRuntimeTests
             .ValidateCandidateAsync(Invocation, files.Id, candidate, new FileChangeLimits(MaxFiles: 33))).Status);
     }
 
+    [Fact]
+    public async Task Conflicted_merge_payload_also_respects_retained_data_limit()
+    {
+        using var files = new Files();
+        files.Write("base.txt", "base\n"); files.Write("ours.txt", "ours\n"); files.Write("theirs.txt", "theirs\n");
+        var policy = new Policy();
+        var result = await files.Runtime(policy).MergeAsync(Invocation, files.Id,
+            new("base.txt", "ours.txt", "theirs.txt"), new FileChangeLimits(MaxTotalRetainedBytes: 1));
+        Assert.Equal(FileChangeStatus.LimitExceeded, result.Status);
+        Assert.Empty(result.Conflicts);
+        Assert.Empty(result.Candidates);
+        Assert.Null(result.Merge);
+        Assert.Contains(policy.Requests, request => request.Phase == FileChangePhase.ResultRelease &&
+            request.Outcome == FileChangeStatus.LimitExceeded);
+        Assert.Equal("ours\n", files.Read("ours.txt"));
+    }
+
     private sealed class Policy(Func<FileChangeAuthorizationRequest, FileChangeAuthorizationStatus>? decide = null) : IFileChangeAuthorizer
     {
         public List<FileChangeAuthorizationRequest> Requests { get; } = [];

@@ -23,7 +23,7 @@ into language/IR `2`, catalogue `windows-text-change-v2` and provider profile
 | D4 authorized file changes | Implemented; complete input-set admission, provider checks, versions/hashes/lengths, read-only validation and independently encoded candidate identity |
 | D5 application bridge | Implemented; fresh capture and exact candidate comparisons, single/batch application through existing host contracts, stale/denied/release/retained-data cases |
 | D6 language v2 | Implemented; diff/merge, line windows, search spans/context, typed JSON and unchanged v1 identities/shapes |
-| Windows conformance | **336 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
+| Windows conformance | **337 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
 | Package qualification | `.nupkg`/`.snupkg` inspection and isolated package-only consumer pass on both frameworks; exact IO closure, README/license and no Local/Hufu/Fuwen/Zhinu core reference |
 | Remote CI | Pending the first push of this baseline; Windows tests/sample/package consumer and Linux neutral-core build are configured |
 | Public feed | Pending IO publication followed by Luban publication and public-feed restore qualification |

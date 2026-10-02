@@ -375,4 +375,4 @@ gate. Avoid empty placeholder packages. Run meaningful suites for changed behavi
 repeat/broaden only for a new change, failure or unresolved concern. Keep
 implemented status distinct from planned guarantees throughout delivery.
 
-Current Luban qualification: 336 tests pass on each of net8.0 and net10.0 against candidate IO packages. Published IO adoption remains RA-5C. Optional Hufu integration evidence and remaining host-specific gates belong in Hufu documentation.
+Current Luban qualification: 337 tests pass on each of net8.0 and net10.0 against candidate IO packages. Published IO adoption remains RA-5C. Optional Hufu integration evidence and remaining host-specific gates belong in Hufu documentation.
