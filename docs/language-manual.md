@@ -142,7 +142,7 @@ var result = await tool.ExecuteAsync(
 
 | V2 command | Result |
 | --- | --- |
-| `diff before-path after-path` | `text-diff`: exact original/proposed hashes, byte lengths, versions, edits and candidate identity |
+| `diff before-path after-path` | `text-diff`: exact before/after hashes, byte lengths and byte-coordinate edits |
 | `merge base-path ours-path theirs-path` | `text-merge` or explicit `text-merge-conflict`; clean edits target **ours**, not the base |
 | `read path --start-line n --line-count n` | `file-window`: bounded lines with input identity and separate input/window completeness |
 | `search query [root] [--context-lines n]` | `search-context-match`: absolute UTF-8 match start/length and optional surrounding lines |
@@ -177,7 +177,7 @@ UTF-8 bytes in the original input, including BOM and line terminators, rather
 than UTF-16 columns. Search retains v1's first literal match per matching line;
 v1 keeps its existing `search-match` JSON shape without these fields.
 
-Returned change values are untrusted proposals and carry no write authority.
+Returned change values are untrusted comparison/proposal facts and carry no write authority. They are not `FilePatchCandidate` objects or captured executor plans. The programmatic `FileChangeRuntime` constructs full candidates with fresh opaque provider versions and candidate identities; a host must compare fresh observations against any previously approved proposal before applying it.
 To apply a supported existing-file change, use the programmatic
 [capture bridge](file-change-application-profile.md) and separate executor.
 The [file-change profile](file-change-profile.md) defines exact-state validation,

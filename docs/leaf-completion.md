@@ -1,6 +1,6 @@
 # Luban leaf completion ledger
 
-Status (2026-10-03): **initial feature baseline implemented and locally qualified**.
+Status (2026-10-03): **initial feature baseline implemented and qualified locally and in CI**.
 Remote CI and public-feed publication are tracked separately below. This ledger
 is the current evidence; counts in older qualification reports are historical.
 
@@ -25,7 +25,7 @@ into language/IR `2`, catalogue `windows-text-change-v2` and provider profile
 | D6 language v2 | Implemented; diff/merge, line windows, search spans/context, typed JSON and unchanged v1 identities/shapes |
 | Windows conformance | **337 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
 | Package qualification | `.nupkg`/`.snupkg` inspection and isolated package-only consumer pass on both frameworks; exact IO closure, README/license and no Local/Hufu/Fuwen/Zhinu core reference |
-| Remote CI | Pending the first push of this baseline; Windows tests/sample/package consumer and Linux neutral-core build are configured |
+| Remote CI | [Run 37039062513](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37039062513) passes for `4bbbd84bbaaf7a3376f85fc1e59da3fd13901693`: Windows tests/sample/package consumer and Linux neutral-core build |
 | Public feed | Pending IO publication followed by Luban publication and public-feed restore qualification |
 | Consumer adoption | Hufu is next; see the [consumer impact guide](consumer-impact.md). Its integration does not block this feature baseline |
 

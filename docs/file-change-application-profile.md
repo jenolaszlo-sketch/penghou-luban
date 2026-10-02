@@ -10,7 +10,7 @@ checks workspace and retained-content/replacement bounds before copying payloads
 then compiles exact `FilePatchStage` operations with the observed opaque versions.
 The current preview profile permits at most 128 aggregate edits. Unsupported
 edit counts or mixed unchanged/changed sets return no plan. An entirely unchanged
-set returns `NoChanges` without dispatch or authorization calls.
+set returns `NoChanges` without dispatch or authorization calls. That describes the supplied proposals; it is not a fresh live equality check.
 
 Fresh preview preflight and whole-set target admission precede all content reads.
 The bridge compares every recaptured original and proposed hash, length and
