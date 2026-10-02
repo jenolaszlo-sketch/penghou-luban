@@ -8,9 +8,11 @@ $actualCommit = (git -C $RepositoryPath rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $actualCommit -ne $expectedCommit) { throw "IO candidate checkout must be $expectedCommit (got $actualCommit)." }
 New-Item -ItemType Directory -Force -Path $FeedPath | Out-Null
 $feed = (Resolve-Path $FeedPath).Path
+$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [IO.Path]::GetTempPath() }
+$cache = Join-Path $cacheRoot 'io-candidate-nuget-cache'
 foreach ($project in @('Penghou.IO.Abstractions', 'Penghou.IO.Protocols', 'Penghou.IO.Local')) {
     $projectFile = Join-Path $RepositoryPath "src/$project/$project.csproj"
-    dotnet pack $projectFile -c Release -p:PackageVersion=0.1.0-preview.1 -p:RestorePackagesPath=(Join-Path $env:RUNNER_TEMP 'io-candidate-nuget-cache') -o $feed
+    dotnet pack $projectFile -c Release -p:PackageVersion=0.1.0-preview.1 "-p:RestorePackagesPath=$cache" -o $feed
     if ($LASTEXITCODE -ne 0) { throw "Packing $project failed." }
 }
 $packages = Get-ChildItem -LiteralPath $feed -Filter '*.nupkg' | Where-Object { $_.Name -notlike '*.symbols.nupkg' }
