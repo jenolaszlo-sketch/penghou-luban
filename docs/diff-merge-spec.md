@@ -1,6 +1,6 @@
 # Deterministic diff, merge and patch materialization
 
-Status: Accepted feature direction, reviewed 2026-10-02. The initial pure text diff/merge profile is implemented and [locally qualified](text-change-profile.md); broader resource/transport/application profiles remain planned.
+Status: Accepted feature direction, reviewed 2026-10-02. The initial pure text diff/merge profile is implemented and [locally qualified](text-change-profile.md); D3 transport, D4 authorized file changes, D5 application bridge and D6 opt-in language v2 are also implemented and qualified under the [initial completion boundary](leaf-completion.md). Broader directory/snapshot/structural profiles remain deferred.
 This is the reviewed Luban specification for the
 [original proposal](archive/diff-merge-proposal-2026-10-02.md), preserved verbatim.
 [ADR 0005](decisions/0005-deterministic-diff-merge.md) records ownership and the

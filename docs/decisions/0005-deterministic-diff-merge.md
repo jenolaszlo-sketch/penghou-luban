@@ -1,6 +1,6 @@
 # ADR 0005: Deterministic diff and merge reuse Luban's patch boundary
 
-Status: Accepted feature direction, 2026-10-02. Initial pure text diff/merge is implemented and [locally qualified](../text-change-profile.md); D3 canonical transport, unified display/import and exact pure materialization are implemented; authorized file/application/language/manifest gates remain planned.
+Status: Accepted feature direction, 2026-10-02. Initial pure text diff/merge is implemented and [locally qualified](../text-change-profile.md); D3 canonical transport, unified display/import and exact pure materialization are implemented; authorized file changes, application bridge and opt-in language v2 are now qualified; directory/manifest profiles remain deferred. See the [current completion ledger](../leaf-completion.md).
 
 Adopt the reviewed [diff/merge specification](../diff-merge-spec.md). Preserve the
 [original proposal](../archive/diff-merge-proposal-2026-10-02.md) verbatim as historical
