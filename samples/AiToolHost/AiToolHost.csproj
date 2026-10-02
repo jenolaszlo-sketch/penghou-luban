@@ -3,8 +3,16 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <PenghouRoot Condition="'$(PenghouRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\Penghou'))</PenghouRoot>
+    <UsePenghouSource Condition="'$(UsePenghouSource)' == ''">false</UsePenghouSource>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Penghou.Luban/Penghou.Luban.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsePenghouSource)' == 'true'">
+    <ProjectReference Include="$(PenghouRoot)\src\Penghou.IO.Local\Penghou.IO.Local.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsePenghouSource)' != 'true'">
+    <PackageReference Include="Penghou.IO.Local" Version="[0.1.0-preview.1]" />
   </ItemGroup>
 </Project>

@@ -3,14 +3,13 @@ using System.Text;
 using System.Text.Json;
 using System.IO.Enumeration;
 using Penghou.IO.Abstractions;
-using Penghou.IO.Local;
 
 namespace Penghou.Luban;
 
 public enum FileEffectKind { FilesRead, FilesFind, FilesSearchText }
 public enum AuthorizationDecision { Permit, Deny }
 public enum EffectStatus { Succeeded, NotFound, AuthorityDenied, AuthorizationUnavailable, InvalidPath, OutsideWorkspace, UnsupportedPlatform, InvalidRequest, LimitExceeded, AccessDenied, UnsupportedProfile, ProviderFailure, DeadlineExceeded }
-public sealed record WorkspaceReference(string Id, string RootPath) { public string FullRootPath { get; } = Path.GetFullPath(RootPath ?? throw new ArgumentNullException(nameof(RootPath))); }
+public sealed record WorkspaceReference(string Id);
 public sealed record EffectInvocation(string SubjectId, string EffectId, string AttemptId);
 public sealed record FileEffectRuntimeOptions(TimeSpan OperationTimeout, int MaxReleaseDependencies = 100_000)
 {
@@ -34,12 +33,15 @@ public sealed class FileEffectRuntime
     private const int MaxRequestBytes = 64 * 1024, MaxFileBytes = 16 * 1024 * 1024, MaxReleaseDependencies = 100_000;
     private readonly WorkspaceReference _workspace;
     private readonly IEffectAuthorizer _authorizer;
+    private readonly IWorkspaceProvider _provider;
     private readonly TimeSpan _operationTimeout;
     private readonly int _maxReleaseDependencies;
-    public FileEffectRuntime(WorkspaceReference workspace, IEffectAuthorizer authorizer, FileEffectRuntimeOptions? options = null)
+    public FileEffectRuntime(WorkspaceReference workspace, IWorkspaceProvider provider, IEffectAuthorizer authorizer, FileEffectRuntimeOptions? options = null)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         _authorizer = authorizer ?? throw new ArgumentNullException(nameof(authorizer));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        if (_provider.Workspace.Value != workspace.Id) throw new ArgumentException("Provider workspace does not match the logical workspace.", nameof(provider));
         options ??= FileEffectRuntimeOptions.Default;
         if (options.OperationTimeout <= TimeSpan.Zero || options.OperationTimeout > TimeSpan.FromSeconds(30)) throw new ArgumentOutOfRangeException(nameof(options), "Operation timeout must be positive and no greater than 30 seconds.");
         if (options.MaxReleaseDependencies is < 1 or > MaxReleaseDependencies) throw new ArgumentOutOfRangeException(nameof(options), "Release dependency limit must be between 1 and 100,000.");
@@ -52,7 +54,7 @@ public sealed class FileEffectRuntime
     {
         using var operation = new OperationScope(cancellationToken, _operationTimeout);
         var operationToken = operation.Token;
-        if (!OperatingSystem.IsWindows()) return Fail<ReadResult>(EffectStatus.UnsupportedPlatform);
+        if (!_provider.Capabilities.SupportsReads) return Fail<ReadResult>(EffectStatus.UnsupportedPlatform);
         if (!ValidInvocation(invocation) || request is null || request.RelativePath is null || request.RelativePath.Length > 2048 || request.MaxBytes is < 1 or > MaxFileBytes || !RequestWithinBound(request)) return Fail<ReadResult>(EffectStatus.InvalidRequest);
         var path = Normalize(request.RelativePath, false); if (path.Error is not null) return Fail<ReadResult>(path.Error.Value);
         var digest = Digest(request);
@@ -83,7 +85,7 @@ public sealed class FileEffectRuntime
     {
         using var operation = new OperationScope(cancellationToken, _operationTimeout);
         var operationToken = operation.Token;
-        if (!OperatingSystem.IsWindows()) return Fail<FindResult>(EffectStatus.UnsupportedPlatform);
+        if (!_provider.Capabilities.SupportsReads) return Fail<FindResult>(EffectStatus.UnsupportedPlatform);
         if (!ValidInvocation(invocation) || request is null || request.Directory is null || request.Directory.Length > 2048 || !ValidLimits(request.MaxDepth, request.MaxEntries, request.MaxMatches, request.MaxOutputBytes) || !ValidPattern(request.Pattern) || !RequestWithinBound(request)) return Fail<FindResult>(EffectStatus.InvalidRequest);
         var root = Normalize(request.Directory, true); if (root.Error is not null) return Fail<FindResult>(root.Error.Value);
         var digest = Digest(request); EffectStatus? admitted;
@@ -133,7 +135,7 @@ public sealed class FileEffectRuntime
     {
         using var operation = new OperationScope(cancellationToken, _operationTimeout);
         var operationToken = operation.Token;
-        if (!OperatingSystem.IsWindows()) return Fail<SearchTextResult>(EffectStatus.UnsupportedPlatform);
+        if (!_provider.Capabilities.SupportsReads) return Fail<SearchTextResult>(EffectStatus.UnsupportedPlatform);
         if (!ValidInvocation(invocation) || request is null || request.Directory is null || request.Directory.Length > 2048 || string.IsNullOrEmpty(request.Text) || request.Text.Length > 4096 || !ValidLimits(request.MaxDepth, request.MaxEntries, request.MaxMatches, request.MaxOutputBytes) || request.MaxFileBytes is < 1 or > MaxFileBytes || request.MaxBytesScanned is < 1 or > 100_000_000 || !ValidPattern(request.Pattern) || !RequestWithinBound(request)) return Fail<SearchTextResult>(EffectStatus.InvalidRequest);
         var root = Normalize(request.Directory, true); if (root.Error is not null) return Fail<SearchTextResult>(root.Error.Value);
         var digest = Digest(request); EffectStatus? admitted;
@@ -214,7 +216,7 @@ public sealed class FileEffectRuntime
         public void Dispose() { _linked.Dispose(); _deadline.Dispose(); }
     }
 
-    private LocalWorkspaceReader Reader(IResourceAuthorizer authorizer, int maxTotalCandidates = 100_000) => new(new(_workspace.Id), _workspace.FullRootPath, authorizer, new() { MaxEntries = 100_000, MaxCandidatesScanned = 100_000, MaxTotalCandidatesScanned = Math.Clamp(maxTotalCandidates, 1, 100_000) });
+    private IWorkspaceReaderSession Reader(IResourceAuthorizer authorizer, int maxTotalCandidates = 100_000) => _provider.OpenReader(authorizer, new(MaxEntries: 100_000, MaxCandidatesScanned: 100_000, MaxTotalCandidatesScanned: Math.Clamp(maxTotalCandidates, 1, 100_000)));
     private async ValueTask<EffectStatus?> Admit(EffectInvocation invocation, FileEffectKind kind, string digest, string target, CancellationToken ct)
     {
         try
@@ -369,8 +371,3 @@ public sealed class FileEffectRuntime
     };
     private static EffectResult<T> Fail<T>(EffectStatus s,string? detail=null) => new(s,default,detail);
 }
-
-
-
-
-

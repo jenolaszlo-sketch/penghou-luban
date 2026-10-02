@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Penghou.IO.Abstractions;
 
 namespace Penghou.Luban.Language;
 
@@ -27,14 +28,19 @@ public sealed class LanguageToolRuntime
 {
     public const string ToolSchemaVersion = "1";
     private readonly WorkspaceReference _workspace;
+    private readonly string _providerProfile;
+    private readonly bool _providerAvailable;
     private readonly LanguageRuntime _runtime;
     private readonly LanguageCompilerOptions _options;
 
-    public LanguageToolRuntime(WorkspaceReference workspace, ILanguageAuthorizer authorizer,
+    public LanguageToolRuntime(WorkspaceReference workspace, IWorkspaceProvider provider, ILanguageAuthorizer authorizer,
         LanguageCompilerOptions? options = null)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-        _runtime = new LanguageRuntime(workspace, authorizer);
+        ArgumentNullException.ThrowIfNull(provider);
+        _providerProfile = provider.Capabilities.ReadProfile;
+        _providerAvailable = provider.Capabilities.SupportsReads;
+        _runtime = new LanguageRuntime(workspace, provider, authorizer);
         var selected = options ?? new LanguageCompilerOptions();
         var validation = LanguageCompiler.Compile("read probe", new(workspace.Id), selected);
         // Tiny valid host bounds can reject this probe's literal/source size;
@@ -49,9 +55,9 @@ public sealed class LanguageToolRuntime
     }
 
     public LanguageToolCapabilities Describe() => new(ToolSchemaVersion, _options.Versions!,
-        "windows", OperatingSystem.IsWindows(), _options.ExecutionLimits!,
+        _providerProfile, _providerAvailable, _options.ExecutionLimits!,
         _options.MaxSourceBytes, _options.MaxTokens, _options.MaxStatements,
-        _options.MaxNodes, _options.MaxLiteralBytes, Commands);
+        _options.MaxNodes, _options.MaxLiteralBytes, CommandsFor(_options.Versions!));
 
     public async ValueTask<LanguageToolResult> ExecuteAsync(string source, EffectInvocation invocation,
         CancellationToken cancellationToken = default)
@@ -78,6 +84,10 @@ public sealed class LanguageToolRuntime
     };
 
     private static IReadOnlyList<T> Freeze<T>(params T[] values) => new ReadOnlyCollection<T>(values);
+    private static IReadOnlyList<LanguageCommandDescription> CommandsFor(LanguageVersions versions) =>
+        versions == new LanguageVersions(LanguageProfile.TextChangeLanguageVersion, LanguageProfile.TextChangeIrVersion,
+            LanguageProfile.TextChangeCatalogueVersion, LanguageProfile.TextChangeProviderProfile)
+            ? V2Commands : Commands;
     private static readonly IReadOnlyList<LanguageCommandDescription> Commands = Freeze(
         new LanguageCommandDescription("read", Freeze("cat", "gc", "files.read"),
             "read path [--max-bytes n] | read [--max-bytes n] (with FileReference input)",
@@ -94,4 +104,15 @@ public sealed class LanguageToolRuntime
         new LanguageCommandDescription("count", Freeze<string>(), "count (terminal stage)",
             Freeze(LanguageValueKind.FileReference, LanguageValueKind.FileContent, LanguageValueKind.SearchMatch),
             LanguageValueKind.Count, Freeze<string>(), false));
+    private static readonly IReadOnlyList<LanguageCommandDescription> V2Commands = Freeze(
+        Commands.Select(c => c.Name switch
+        {
+            "read" => c with { Syntax = "read path [--max-bytes n] [--start-line n --line-count n] (FileContent by default; FileWindow when ranged)", Options = Freeze("max-bytes", "start-line", "line-count") },
+            "search" => c with { Syntax = "search query [root] [--context-lines 0..20] (returns exact UTF-8 match spans and bounded context)", OutputType = LanguageValueKind.SearchContextMatch, Options = Freeze("include", "exclude", "max-depth", "max-entries", "max-matches", "max-output-bytes", "max-file-bytes", "max-bytes-scanned", "context-lines") },
+            "take" or "count" => c with { InputTypes = Freeze(LanguageValueKind.FileReference, LanguageValueKind.FileContent, LanguageValueKind.SearchContextMatch, LanguageValueKind.FileWindow, LanguageValueKind.TextDiff, LanguageValueKind.TextMerge) },
+            _ => c
+        }).Concat(new[] {
+            new LanguageCommandDescription("diff", Freeze<string>(), "diff <before-path> <after-path>", Freeze<LanguageValueKind>(), LanguageValueKind.TextDiff, Freeze<string>(), true),
+            new LanguageCommandDescription("merge", Freeze<string>(), "merge <base-path> <ours-path> <theirs-path>", Freeze<LanguageValueKind>(), LanguageValueKind.TextMerge, Freeze<string>(), true)
+        }).ToArray());
 }

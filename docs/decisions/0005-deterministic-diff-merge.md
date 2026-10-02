@@ -43,8 +43,9 @@ providers. Diff/merge must not add a second durability store or rollback mechani
 The [D1–D7 plan](../implementation-plan.md#diff-and-merge-delivery-track)
 starts with pure contracts/text diff and deterministic merge, then transport/import
 validation, authorized file adapters, patch/execution bridging and optional language
-descriptors. Pure work can proceed alongside Step 7; a governed mutation release
-still requires Step 7's real approving host and exact terminal recovery.
+descriptors. Application qualifies the neutral admission, live resource checks and mandatory
+start/outcome contracts. Hufu adoption is optional and workflow durability
+belongs outside Luban's completion criteria.
 
 The reviewed scope tightens the proposal: source hashes are mandatory for actual
 existing-file application; cross-workspace inputs have independent authorization;

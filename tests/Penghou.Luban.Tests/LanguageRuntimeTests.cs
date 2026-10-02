@@ -1,5 +1,7 @@
 using Penghou.IO.Abstractions;
 using Penghou.Luban;
+using Penghou.Luban.Changes;
+using System.Text;
 using Penghou.Luban.Language;
 using Xunit;
 
@@ -7,6 +9,171 @@ namespace Penghou.Luban.Language.Tests;
 
 public sealed class LanguageRuntimeTests
 {
+    private static readonly LanguageVersions TextChangeVersions = new(LanguageProfile.TextChangeLanguageVersion,
+        LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion,
+        LanguageProfile.TextChangeProviderProfile);
+
+    [Fact]
+    public async Task V2DiffIsReadOnlyTypedAndBindsEveryTargetAdmissionBeforeProviderReads()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.Write("before.txt", "one\nold\nthree\n");
+        workspace.Write("after.txt", "one\nnew\nthree\n");
+        var authority = new RecordingAuthority(_ => LanguageAuthorityStatus.Permit);
+        var document = LanguageCompiler.Compile("#!luban2\ndiff before.txt after.txt", workspace.Id,
+            new LanguageCompilerOptions(Versions: TextChangeVersions)).Document!;
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), authority);
+
+        var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), document);
+
+        Assert.Equal(LanguageRunStatus.Succeeded, result.Status);
+        var diff = Assert.IsType<DiffValue>(Assert.Single(Assert.Single(result.Statements!).Values));
+        Assert.True(diff.IsUntrustedCandidate);
+        Assert.Equal("before.txt", diff.BeforePath);
+        Assert.Equal("after.txt", diff.AfterPath);
+        Assert.Contains(authority.Requests, r => r.Phase == LanguageAuthorizationPhase.ResourceAccess && r.ResourcePath == "before.txt" && r.ResourceRequestIdentity is null);
+        Assert.Contains(authority.Requests, r => r.Phase == LanguageAuthorizationPhase.ResourceAccess && r.ResourcePath == "after.txt" && r.ResourceRequestIdentity is null);
+        Assert.Contains(authority.Requests, r => r.Phase == LanguageAuthorizationPhase.ResourceAccess && r.ResourcePath == "before.txt" && r.ResourceRequestIdentity is not null);
+        Assert.Contains(authority.Requests, r => r.Phase == LanguageAuthorizationPhase.Release);
+        Assert.Equal("one\nold\nthree\n", File.ReadAllText(Path.Combine(workspace.Root, "before.txt")));
+        Assert.Equal("one\nnew\nthree\n", File.ReadAllText(Path.Combine(workspace.Root, "after.txt")));
+    }
+
+    [Fact]
+    public async Task V2TargetDenialStopsBeforeReadsAndReleaseDenialSuppressesConflictDetails()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.Write("base.txt", "start\nbase\nend\n");
+        workspace.Write("ours.txt", "start\nours\nend\n");
+        workspace.Write("theirs.txt", "start\ntheirs\nend\n");
+        var deniedTarget = new RecordingAuthority(r => r.Phase == LanguageAuthorizationPhase.ResourceAccess &&
+            r.ResourcePath == "theirs.txt" && r.ResourceRequestIdentity is null ? LanguageAuthorityStatus.Deny : LanguageAuthorityStatus.Permit);
+        var merge = LanguageCompiler.Compile("merge base.txt ours.txt theirs.txt", workspace.Id,
+            new LanguageCompilerOptions(Versions: TextChangeVersions)).Document!;
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), deniedTarget);
+        var denied = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), merge);
+        Assert.Equal(LanguageRunStatus.AuthorityDenied, denied.Status);
+        Assert.Null(denied.Statements);
+        Assert.DoesNotContain(deniedTarget.Requests, r => r.Phase == LanguageAuthorizationPhase.ResourceAccess && r.ResourceRequestIdentity is not null);
+
+        var permit = new RecordingAuthority(_ => LanguageAuthorityStatus.Permit);
+        var permitRuntime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), permit);
+        var conflicted = await permitRuntime.ExecuteAsync(new("subject", "effect", "attempt"), merge);
+        Assert.Equal(LanguageRunStatus.Succeeded, conflicted.Status);
+        var conflictValue = Assert.IsType<MergeConflictValue>(Assert.Single(Assert.Single(conflicted.Statements!).Values));
+        Assert.True(conflictValue.IsUntrustedCandidate);
+        Assert.Single(conflictValue.Conflicts);
+
+        var revokeAtRelease = new RecordingAuthority(r => r.Phase == LanguageAuthorizationPhase.Release
+            ? LanguageAuthorityStatus.Deny : LanguageAuthorityStatus.Permit);
+        var revokeRuntime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), revokeAtRelease);
+        var revoked = await revokeRuntime.ExecuteAsync(new("subject", "effect", "attempt"), merge);
+        Assert.Equal(LanguageRunStatus.AuthorityDenied, revoked.Status);
+        Assert.Null(revoked.Statements);
+    }
+
+    [Fact]
+    public async Task V2ReadWindowAndSearchContextKeepCompleteInputAndUtf8Offsets()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.Write("unicode.txt", "first\r\n😀 needle end\r\nlast");
+        var authority = new RecordingAuthority(_ => LanguageAuthorityStatus.Permit);
+        var options = new LanguageCompilerOptions(Versions: TextChangeVersions);
+        var compiled = LanguageCompiler.Compile("read unicode.txt --start-line 2 --line-count 1\nsearch needle . --include unicode.txt --context-lines 1",
+            workspace.Id, options);
+        Assert.True(compiled.Succeeded, string.Join("; ", compiled.Diagnostics.Select(d => d.Code)));
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), authority);
+
+        var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), compiled.Document!);
+
+        Assert.Equal(LanguageRunStatus.Succeeded, result.Status);
+        var window = Assert.IsType<FileWindowValue>(Assert.Single(result.Statements![0].Values));
+        Assert.Equal("😀 needle end\r\n", window.Content);
+        Assert.True(window.CompleteInput);
+        Assert.True(window.CompleteWindow);
+        var match = Assert.IsType<SearchContextMatchValue>(Assert.Single(result.Statements[1].Values));
+        Assert.Equal(2, match.LineNumber);
+        Assert.Equal(12, match.MatchStartByte); // first\r\n (7 bytes), then emoji and a space (5 bytes)
+        Assert.Equal(6, match.MatchLengthBytes);
+        Assert.Equal(new[] { "first" }, match.BeforeContext);
+        Assert.Equal(new[] { "last" }, match.AfterContext);
+    }
+
+    [Fact]
+    public async Task V2SearchSpanIsAbsoluteAfterBomAndManyCrlfLinesWithNoContextOption()
+    {
+        using var workspace = new TestWorkspace();
+        var text = string.Concat(Enumerable.Repeat("row\r\n", 2_000)) + "😀 needle\r\n";
+        var path = Path.Combine(workspace.Root, "large.txt");
+        var content = new UTF8Encoding(false, true).GetBytes(text);
+        var preamble = new UTF8Encoding(true).GetPreamble();
+        File.WriteAllBytes(path, preamble.Concat(content).ToArray());
+        var document = LanguageCompiler.Compile("search needle . --include large.txt", workspace.Id,
+            new LanguageCompilerOptions(Versions: TextChangeVersions)).Document!;
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root),
+            new RecordingAuthority(_ => LanguageAuthorityStatus.Permit));
+
+        var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), document);
+
+        Assert.Equal(LanguageRunStatus.Succeeded, result.Status);
+        var match = Assert.IsType<SearchContextMatchValue>(Assert.Single(Assert.Single(result.Statements!).Values));
+        Assert.Equal(2_001, match.LineNumber);
+        Assert.Equal(10_008, match.MatchStartByte); // BOM + 2,000 CRLF records + emoji and its following space.
+        Assert.Equal(6, match.MatchLengthBytes);
+        Assert.Empty(match.BeforeContext);
+        Assert.Empty(match.AfterContext);
+        Assert.True(match.CompleteInput);
+        Assert.True(match.CompleteWindow);
+    }
+
+    [Fact]
+    public async Task V2ReadWindowMarksEofClippingAndFinalNewlineLineTokensExplicitly()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.Write("ending.txt", "a\n");
+        workspace.Write("empty.txt", string.Empty);
+        var document = LanguageCompiler.Compile(
+            "read ending.txt --start-line 2 --line-count 1\nread empty.txt --start-line 2 --line-count 1\nread empty.txt --start-line 1 --line-count 1",
+            workspace.Id, new LanguageCompilerOptions(Versions: TextChangeVersions)).Document!;
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root),
+            new RecordingAuthority(_ => LanguageAuthorityStatus.Permit));
+
+        var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), document);
+
+        Assert.Equal(LanguageRunStatus.Succeeded, result.Status);
+        var windows = result.Statements!.Select(s => Assert.IsType<FileWindowValue>(Assert.Single(s.Values))).ToArray();
+        Assert.Equal(1, windows[0].ReturnedLineCount); // LF adds a final empty line token.
+        Assert.True(windows[0].CompleteInput);
+        Assert.True(windows[0].CompleteWindow);
+        Assert.Equal(0, windows[1].ReturnedLineCount); // Empty input has one line token at line 1.
+        Assert.True(windows[1].CompleteInput);
+        Assert.False(windows[1].CompleteWindow);
+        Assert.Equal(1, windows[2].ReturnedLineCount);
+        Assert.True(windows[2].CompleteWindow);
+    }
+
+    [Fact]
+    public async Task V2OperationsShareConservativeWholeDocumentReadBudget()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.Write("a.txt", "a"); workspace.Write("b.txt", "b");
+        workspace.Write("c.txt", "c"); workspace.Write("d.txt", "d");
+        var authority = new RecordingAuthority(_ => LanguageAuthorityStatus.Permit);
+        var document = LanguageCompiler.Compile("diff a.txt b.txt\ndiff c.txt d.txt", workspace.Id,
+            new LanguageCompilerOptions(Versions: TextChangeVersions,
+                ExecutionLimits: new LanguageExecutionLimits(MaxReadBytes: 4))).Document!;
+        var runtime = new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), authority);
+
+        var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), document);
+
+        Assert.Equal(LanguageRunStatus.LimitExceeded, result.Status);
+        Assert.Null(result.Statements);
+        var providerChecks = authority.Requests.Where(r => r.Phase == LanguageAuthorizationPhase.ResourceAccess &&
+            r.Action == ResourceAction.ReadFile && r.ResourceRequestIdentity is not null).ToArray();
+        Assert.Equal(2, providerChecks.Length);
+        Assert.All(providerChecks, r => Assert.Contains(r.ResourcePath, new[] { "a.txt", "b.txt" }));
+    }
+
     [Fact]
     public async Task PreflightChecksEveryKnownEffectBeforeAnyResourceAccess()
     {
@@ -216,7 +383,7 @@ public sealed class LanguageRuntimeTests
         workspace.Write("present.txt", "data");
         var authority = new RecordingAuthority(_ => LanguageAuthorityStatus.Permit);
         var doc = Compile(workspace, "read present.txt").Document!;
-        var runtime = new LanguageRuntime(new WorkspaceReference("other-workspace", workspace.Root), authority);
+        var runtime = new LanguageRuntime(new WorkspaceReference("other-workspace"), TestLocalProvider.Create("other-workspace", workspace.Root), authority);
 
         var result = await runtime.ExecuteAsync(new EffectInvocation("subject", "effect", "attempt"), doc);
 
@@ -349,7 +516,7 @@ public sealed class LanguageRuntimeTests
         TestWorkspace workspace, RecordingAuthority authority, string source, LanguageExecutionLimits? limits = null)
     {
         var document = Compile(workspace, source, limits).Document ?? throw new Xunit.Sdk.XunitException("Expected source to compile.");
-        return (new LanguageRuntime(new WorkspaceReference(workspace.Id.Value, workspace.Root), authority), document,
+        return (new LanguageRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), authority), document,
             new EffectInvocation("subject", "effect", "attempt"));
     }
 

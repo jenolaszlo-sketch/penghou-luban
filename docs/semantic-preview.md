@@ -45,7 +45,13 @@ For node index `n`, `SHA256(text("Penghou.Luban.PreviewNode"), i32(1), text(docu
 7. Proposal list: `i32(count)`, then each proposal's folded relative path, original provider version, original SHA-256, original byte length, proposed SHA-256, proposed byte length, and exact ordered patch list.
 8. Dependency list: `i32(count)` followed by each dependency identity as `text`.
 
-The plan binds observations, provider versions, completeness/coverage, dependencies, unresolved states, and the exact patch offsets and replacement bytes. Full original/proposed file content is not retained in the plan. Opaque continuation tokens are excluded from directory page identity.
+The plan binds observations, opaque provider versions, completeness/coverage,
+dependencies, unresolved states and exact patch payloads. Capture catalogue
+`windows-patch-capture-v2` retains bounded immutable original/proposed buffers;
+their hashes and lengths bind them to the plan and the executor verifies pure
+materialization. Both buffers count against retained memory, in addition to the
+canonical encoding bound. Content release/retention remains host-controlled.
+Opaque continuation tokens are excluded from directory page identity.
 
 ## Authorized directory page identity
 
@@ -55,10 +61,15 @@ The plan binds observations, provider versions, completeness/coverage, dependenc
 
 This vector was generated separately in PowerShell using `BinaryWriter` little-endian primitives and `SHA256.HashData`, not by calling the compiler's canonical writer. Inputs: workspace `ws`; default `PreviewLimits`; one exact patch at normalized path `a.txt`, no expected version, patch `(start=0, delete=1, replacement=UTF8("B"))`; node index zero. The encoded document is 177 bytes.
 
-- Document identity: `f9863b107047f7925f852b951f2ed3a7f391e0f1dd0d983294eaffd79a417d0e`
-- Node identity: `06cf34965d6021555136135e9459d37618b3a40d0b448edc2008f56e4f9873fd`
+- Document identity: `68cfd2f59c7890bec7ecc12e2161c141e0fd7bc581b6fc0119d3a81851aaef3b`
+- Node identity: `4b94be5e01cc5f6eeb321b45de8ef0ee423b0f08908b64e66d620eb555e71ec1`
 
-The v1 profile is frozen. Any encoding, default, catalogue, provider, or schema change that affects meaning requires a new profile/version and new vectors.
+Primitive encoding remains v1; the catalogue is now `windows-patch-capture-v2`.
+The previous v1 catalogue vector remains historical: document
+`f9863b107047f7925f852b951f2ed3a7f391e0f1dd0d983294eaffd79a417d0e`, node
+`06cf34965d6021555136135e9459d37618b3a40d0b448edc2008f56e4f9873fd`.
+Both catalogue vectors were independently generated with the documented
+PowerShell binary encoding. Meaningful profile changes require new versions.
 
 
 ## Closed enum values

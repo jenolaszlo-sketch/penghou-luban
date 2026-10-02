@@ -17,7 +17,7 @@ public sealed class PreviewBoundaryTests
         var authority = new Authority(r => r.Phase == PreviewAuthorizationPhase.Release &&
             r.Action == ResourceAction.ReadMetadata && r.ResourcePath == "other.txt" ? LanguageAuthorityStatus.Deny : LanguageAuthorityStatus.Permit);
         var document = Compile([new GlobPatchStage(".", "*.cs", PreviewSelection.AuthorizedView, Patches(), new())]);
-        var result = await new PreviewRuntime(new("workspace", workspace.Root), authority).WhatIfAsync(Invocation(), document);
+        var result = await new PreviewRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), authority).WhatIfAsync(Invocation(), document);
         Assert.Equal(PreviewRunStatus.AuthorityDenied, result.Status);
         Assert.Null(result.Plan);
         Assert.Contains(authority.Requests, r => r.Phase == PreviewAuthorizationPhase.Release && r.ResourcePath == "other.txt");
@@ -30,7 +30,7 @@ public sealed class PreviewBoundaryTests
         for (var i = 0; i < 12; i++) File.WriteAllText(Path.Combine(workspace.Root, i + ".txt"), "a");
         var document = Compile([new GlobPatchStage(".", "*.cs", PreviewSelection.AuthorizedView,
             Patches(), new(MaxEntries: 100, MaxMatches: 10, MaxOutputBytes: 1000))], new(MaxPlanBytes: 1500));
-        var result = await new PreviewRuntime(new("workspace", workspace.Root), new Authority(_ => LanguageAuthorityStatus.Permit)).WhatIfAsync(Invocation(), document);
+        var result = await new PreviewRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), new Authority(_ => LanguageAuthorityStatus.Permit)).WhatIfAsync(Invocation(), document);
         Assert.Equal(PreviewRunStatus.LimitExceeded, result.Status);
         Assert.Null(result.Plan);
     }
@@ -45,7 +45,7 @@ public sealed class PreviewBoundaryTests
             ? LanguageAuthorityStatus.Deny : LanguageAuthorityStatus.Permit);
         var document = Compile([new FilePatchStage("a.cs", Patches()),
             new GlobPatchStage(".", "*.txt", PreviewSelection.AuthorizedView, Patches(), new(MaxMatches: 999))]);
-        var result = await new PreviewRuntime(new("workspace", workspace.Root), authority).WhatIfAsync(Invocation(), document);
+        var result = await new PreviewRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), authority).WhatIfAsync(Invocation(), document);
         Assert.Equal(PreviewRunStatus.AuthorityDenied, result.Status);
         Assert.Null(result.Plan);
         Assert.DoesNotContain(authority.Requests, r => r.Phase == PreviewAuthorizationPhase.ResourceAccess && r.Action == ResourceAction.ReadFile);
@@ -57,7 +57,7 @@ public sealed class PreviewBoundaryTests
         using var workspace = new Workspace();
         var authority = new Authority(_ => LanguageAuthorityStatus.Permit);
         var document = Compile([new FilePatchStage("missing", Patches())]);
-        var result = await new PreviewRuntime(new("workspace", workspace.Root), authority).WhatIfAsync(new("\uD800", "effect", "attempt"), document);
+        var result = await new PreviewRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), authority).WhatIfAsync(new("\uD800", "effect", "attempt"), document);
         Assert.Equal(PreviewRunStatus.InvalidDocument, result.Status);
         Assert.Empty(authority.Requests);
     }

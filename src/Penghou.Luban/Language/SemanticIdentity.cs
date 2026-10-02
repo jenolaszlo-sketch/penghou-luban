@@ -31,14 +31,22 @@ internal static class SemanticIdentity
                 switch (s)
                 {
                     case ReadStage r:
-                        Tag(w, 1); NullablePath(w, r.Path); I32(w, r.MaxBytes); Edge(w, ni == 0 ? -1 : ni - 1); break;
+                        Tag(w, 1); NullablePath(w, r.Path); I32(w, r.MaxBytes);
+                        if (IsTextChangeProfile(versions)) { NullableI32(w, r.StartLine); NullableI32(w, r.LineCount); }
+                        Edge(w, ni == 0 ? -1 : ni - 1); break;
                     case FindStage f:
                         Tag(w, 2); Path(w, f.Root, true); Glob(w, f.Pattern);
                         I32(w, f.Limits.MaxDepth); I32(w, f.Limits.MaxEntries); I32(w, f.Limits.MaxMatches); I32(w, f.Limits.MaxOutputBytes); Edge(w, -1); break;
                     case SearchStage q:
                         Tag(w, 3); Text(w, q.Query); NullablePath(w, q.Root); Glob(w, q.Include); NullableGlob(w, q.Exclude);
                         I32(w, q.Limits.MaxDepth); I32(w, q.Limits.MaxEntries); I32(w, q.Limits.MaxMatches); I32(w, q.Limits.MaxOutputBytes);
-                        I32(w, q.Limits.MaxFileBytes); I32(w, q.Limits.MaxBytesScanned); Edge(w, q.Root is null ? ni - 1 : -1); break;
+                        I32(w, q.Limits.MaxFileBytes); I32(w, q.Limits.MaxBytesScanned);
+                        if (IsTextChangeProfile(versions)) I32(w, q.ContextLines);
+                        Edge(w, q.Root is null ? ni - 1 : -1); break;
+                    case DiffStage f:
+                        Tag(w, 6); Text(w, Penghou.Luban.Changes.TextChangeProfile.Identity); Path(w, f.BeforePath, false); Path(w, f.AfterPath, false); TextOptions(w, f.Options!); Edge(w, -1); break;
+                    case MergeStage m:
+                        Tag(w, 7); Text(w, Penghou.Luban.Changes.TextChangeProfile.Identity); Path(w, m.BasePath, false); Path(w, m.OursPath, false); Path(w, m.TheirsPath, false); TextOptions(w, m.Options!); Edge(w, -1); break;
                     case TakeStage t: Tag(w, 4); I32(w, t.Count); Edge(w, ni - 1); break;
                     case CountStage: Tag(w, 5); Edge(w, ni - 1); break;
                     default: throw new ArgumentException("Unknown language stage.", nameof(statements));
@@ -57,12 +65,20 @@ internal static class SemanticIdentity
 
     private static void Tag(BinaryWriter w, byte value) => w.Write(value);
     private static void Edge(BinaryWriter w, int value) => I32(w, value);
+    private static void NullableI32(BinaryWriter w, int? value) { w.Write(value.HasValue); if (value.HasValue) I32(w, value.Value); }
+    private static bool IsTextChangeProfile(LanguageVersions v) => v == new LanguageVersions(LanguageProfile.TextChangeLanguageVersion,
+        LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion, LanguageProfile.TextChangeProviderProfile);
     private static void I32(BinaryWriter w, int value) { Span<byte> b = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(b, value); w.Write(b); }
     private static void Text(BinaryWriter w, string value) { var b = Utf8.GetBytes(value); I32(w, b.Length); w.Write(b); }
     private static void Path(BinaryWriter w, string value, bool root) => Text(w, FoldAscii(value));
     private static void NullablePath(BinaryWriter w, string? value) { w.Write(value is not null); if (value is not null) Path(w, value, true); }
     private static void Glob(BinaryWriter w, string value) => Text(w, FoldAscii(value));
     private static void NullableGlob(BinaryWriter w, string? value) { w.Write(value is not null); if (value is not null) Glob(w, value); }
+    private static void TextOptions(BinaryWriter w, Penghou.Luban.Changes.TextChangeOptions value)
+    {
+        I32(w, value.MaxInputBytes); I32(w, value.MaxLines); I32(w, value.MaxWorkCells); I32(w, value.MaxMatrixBytes);
+        I32(w, value.MaxEdits); I32(w, value.MaxOutputBytes); I32(w, value.MaxConflicts);
+    }
     private static string FoldAscii(string value)
     {
         var chars = value.ToCharArray(); for (var i = 0; i < chars.Length; i++) if (chars[i] is >= 'A' and <= 'Z') chars[i] = (char)(chars[i] + 32);

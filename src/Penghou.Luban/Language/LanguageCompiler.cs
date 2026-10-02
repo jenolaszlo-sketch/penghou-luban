@@ -70,7 +70,7 @@ public static class LanguageCompiler
             diagnostics.Add(new("LUBAN_EMPTY_DOCUMENT", "A compiled document must contain at least one statement."));
         if (string.IsNullOrWhiteSpace(workspace.Value) || workspace.Value.Length > 256 || workspace.Value.Any(char.IsControl))
             diagnostics.Add(new("LUBAN_WORKSPACE", "Workspace binding must be a nonempty bounded host identity."));
-        TypeCheck(input, limits, diagnostics);
+        TypeCheck(input, limits, versions, diagnostics);
         if (diagnostics.Count > 0) return new(null, diagnostics.AsReadOnly());
         var canonical = input.Select(s => (IReadOnlyList<LanguageStage>)new ReadOnlyCollection<LanguageStage>(s.ToArray())).ToArray();
         var digest = SemanticIdentity.Document(versions, workspace, limits, canonical);
@@ -80,7 +80,7 @@ public static class LanguageCompiler
             LanguageValueKind? current = null;
             for (var ni = 0; ni < stages.Count; ni++)
             {
-                if (stages[ni] is not TakeStage and not CountStage) current = OutputOf(stages[ni]);
+                if (stages[ni] is not TakeStage and not CountStage) current = OutputOf(stages[ni], versions);
                 else if (stages[ni] is CountStage) current = LanguageValueKind.Count;
                 output[ni] = new CompiledNode(stages[ni], current!.Value, SemanticIdentity.Node(digest, si, ni), si, ni);
             }
@@ -120,7 +120,17 @@ public static class LanguageCompiler
                 switch (stage)
                 {
                     case ReadStage r:
-                        if (r.Path is not null) { var p = LanguagePaths.Normalize(r.Path); CheckLiteral(p, options); cloned.Add(new ReadStage(p, r.MaxBytes)); } else cloned.Add(new ReadStage(null, r.MaxBytes)); break;
+                        if (r.Path is not null) { var p = LanguagePaths.Normalize(r.Path); CheckLiteral(p, options); cloned.Add(new ReadStage(p, r.MaxBytes, r.StartLine, r.LineCount)); } else cloned.Add(new ReadStage(null, r.MaxBytes, r.StartLine, r.LineCount)); break;
+                    case DiffStage f:
+                        if (!IsTextChangeProfile(options.Versions ?? new LanguageVersions())) { d.Add(new("LUBAN_IR_STAGE", "Typed IR contains a stage unavailable in the selected profile.")); break; }
+                        var before = LanguagePaths.Normalize(f.BeforePath); var after = LanguagePaths.Normalize(f.AfterPath);
+                        CheckLiteral(before, options); CheckLiteral(after, options);
+                        cloned.Add(new DiffStage(before, after, (f.Options ?? Penghou.Luban.Changes.TextChangeOptions.Default) with { })); break;
+                    case MergeStage m:
+                        if (!IsTextChangeProfile(options.Versions ?? new LanguageVersions())) { d.Add(new("LUBAN_IR_STAGE", "Typed IR contains a stage unavailable in the selected profile.")); break; }
+                        var basePath = LanguagePaths.Normalize(m.BasePath); var oursPath = LanguagePaths.Normalize(m.OursPath); var theirsPath = LanguagePaths.Normalize(m.TheirsPath);
+                        CheckLiteral(basePath, options); CheckLiteral(oursPath, options); CheckLiteral(theirsPath, options);
+                        cloned.Add(new MergeStage(basePath, oursPath, theirsPath, (m.Options ?? Penghou.Luban.Changes.TextChangeOptions.Default) with { })); break;
                     case FindStage f:
                         if (f.Limits is null) { d.Add(new("LUBAN_IR_LIMITS", "Find limits cannot be null.")); break; }
                         var findRoot = LanguagePaths.Normalize(f.Root, true); CheckLiteral(findRoot, options);
@@ -133,7 +143,7 @@ public static class LanguageCompiler
                         if (searchRoot is not null) CheckLiteral(searchRoot, options);
                         var include = LanguageGlob.Normalize(s.Include); CheckLiteral(include, options);
                         var exclude = s.Exclude is null ? null : LanguageGlob.Normalize(s.Exclude); if (exclude is not null) CheckLiteral(exclude, options);
-                        cloned.Add(new SearchStage(s.Query, searchRoot, include, exclude, s.Limits with { })); break;
+                        cloned.Add(new SearchStage(s.Query, searchRoot, include, exclude, s.Limits with { }, s.ContextLines)); break;
                     case TakeStage t: cloned.Add(t with { }); break;
                     case CountStage: cloned.Add(new CountStage()); break;
                     default: d.Add(new("LUBAN_IR_STAGE", "Typed IR contains an unsupported stage type.")); break;
@@ -152,7 +162,7 @@ public static class LanguageCompiler
             throw new ArgumentException("Typed value exceeds the literal byte budget.");
     }
 
-    private static void TypeCheck(IReadOnlyList<IReadOnlyList<LanguageStage>> statements, LanguageExecutionLimits limits, List<LanguageDiagnostic> d)
+    private static void TypeCheck(IReadOnlyList<IReadOnlyList<LanguageStage>> statements, LanguageExecutionLimits limits, LanguageVersions versions, List<LanguageDiagnostic> d)
     {
         var nodes = 0;
         foreach (var stages in statements)
@@ -167,20 +177,32 @@ public static class LanguageCompiler
                 {
                     case ReadStage r:
                         if (r.MaxBytes <= 0 || r.MaxBytes > limits.MaxReadBytes) d.Add(new("LUBAN_READ_LIMIT", "Read byte limit is outside the execution ceiling."));
+                        if (r.StartLine.HasValue != r.LineCount.HasValue || r.StartLine is < 1 || r.LineCount is < 1 or > 10_000 || (r.StartLine.HasValue || r.LineCount.HasValue) && !IsTextChangeProfile(versions)) d.Add(new("LUBAN_READ_WINDOW", "Line windows require a valid v2 start-line and line-count pair."));
                         if (i == 0 && r.Path is null) d.Add(new("LUBAN_MISSING_INPUT", "A first-stage read requires an explicit path."));
                         if (i > 0 && (r.Path is not null || current != LanguageValueKind.FileReference)) d.Add(new("LUBAN_READ_EDGE", "Piped read requires FileReference input and no path."));
-                        current = LanguageValueKind.FileContent; break;
+                        current = r.StartLine.HasValue ? LanguageValueKind.FileWindow : LanguageValueKind.FileContent; break;
+                    case DiffStage f:
+                        if (!IsTextChangeProfile(versions)) d.Add(new("LUBAN_IR_STAGE", "Text diff requires the selected text-change language profile."));
+                        ValidateTextOptions(f.Options, d);
+                        if (i != 0) d.Add(new("LUBAN_DIFF_EDGE", "Diff cannot consume pipeline input."));
+                        current = LanguageValueKind.TextDiff; break;
+                    case MergeStage m:
+                        if (!IsTextChangeProfile(versions)) d.Add(new("LUBAN_IR_STAGE", "Text merge requires the selected text-change language profile."));
+                        ValidateTextOptions(m.Options, d);
+                        if (i != 0) d.Add(new("LUBAN_MERGE_EDGE", "Merge cannot consume pipeline input."));
+                        current = LanguageValueKind.TextMerge; break;
                     case FindStage f:
                         CheckTraversal(f.Limits, limits, d);
                         if (i != 0) d.Add(new("LUBAN_FIND_EDGE", "Find cannot consume pipeline input."));
                         current = LanguageValueKind.FileReference; break;
                     case SearchStage q:
                         CheckSearch(q.Limits, limits, d);
+                        if (q.ContextLines is < 0 or > 20 || q.ContextLines != 0 && !IsTextChangeProfile(versions)) d.Add(new("LUBAN_SEARCH_CONTEXT", "Search context is available only in v2 and is bounded to 20 lines."));
                         if (string.IsNullOrEmpty(q.Query)) d.Add(new("LUBAN_QUERY_EMPTY", "Search query cannot be empty."));
                         if (i == 0 && q.Root is null) d.Add(new("LUBAN_MISSING_INPUT", "A first-stage search requires an explicit root."));
                         if (i > 0 && (q.Root is not null || current != LanguageValueKind.FileReference)) d.Add(new("LUBAN_SEARCH_EDGE", "Piped search requires FileReference input and no root."));
                         if (i > 0 && (q.Include != "**" || q.Exclude is not null)) d.Add(new("LUBAN_PIPE_SEARCH_SELECTION", "Piped search cannot set include or exclude selectors."));
-                        current = LanguageValueKind.SearchMatch; break;
+                        current = IsTextChangeProfile(versions) || q.ContextLines > 0 ? LanguageValueKind.SearchContextMatch : LanguageValueKind.SearchMatch; break;
                     case TakeStage t:
                         if (current is null || current == LanguageValueKind.Count) d.Add(new("LUBAN_TAKE_EDGE", "Take requires a value stream."));
                         if (t.Count < 0 || t.Count > 10_000) d.Add(new("LUBAN_TAKE_RANGE", "Take must be between 0 and 10000."));
@@ -231,8 +253,9 @@ public static class LanguageCompiler
             if (++lineNo > HardMaxSourceBytes) { d.Add(new("LUBAN_SOURCE_LIMIT", "Too many source lines.")); return Array.Empty<IReadOnlyList<LanguageStage>>(); }
             if (lineNo == 1 && line.StartsWith("#!", StringComparison.Ordinal))
             {
-                if (line != "#!luban1") d.Add(new("LUBAN_DIRECTIVE", "Only the exact #!luban1 directive is supported.", 0, line.Length));
-                else if (o.Versions is { Language: not LanguageProfile.LanguageVersion }) d.Add(new("LUBAN_DIRECTIVE_VERSION", "Directive version does not match the selected profile.", 0, line.Length));
+                var expected = IsTextChangeProfile(o.Versions ?? new LanguageVersions()) ? "#!luban2" : "#!luban1";
+                if (line != "#!luban1" && line != "#!luban2") d.Add(new("LUBAN_DIRECTIVE", "Only an exact supported Luban directive is accepted.", 0, line.Length));
+                else if (line != expected) d.Add(new("LUBAN_DIRECTIVE_VERSION", "Directive version does not match the selected profile.", 0, line.Length));
             }
             else
             {
@@ -268,10 +291,10 @@ public static class LanguageCompiler
             else
             {
                 var built = new List<LanguageStage>();
-                var selectedLimits = o.ExecutionLimits ?? new LanguageExecutionLimits();
-                for (var stageIndex = 0; stageIndex < current.Count; stageIndex++)
+                    var selectedLimits = o.ExecutionLimits ?? new LanguageExecutionLimits();
+                    for (var stageIndex = 0; stageIndex < current.Count; stageIndex++)
                 {
-                    ct.ThrowIfCancellationRequested(); var stage = ParseStage(current[stageIndex], d, selectedLimits, stageIndex > 0);
+                    ct.ThrowIfCancellationRequested(); var stage = ParseStage(current[stageIndex], d, selectedLimits, stageIndex > 0, o.Versions ?? new LanguageVersions());
                     if (stage is not null) built.Add(stage);
                 }
                 if (built.Count == current.Count && built.Count > 0)
@@ -331,15 +354,17 @@ public static class LanguageCompiler
         static char BadEscape(char e, List<LanguageDiagnostic> ds, int pos) { ds.Add(new("LUBAN_ESCAPE", "Unsupported double-quote escape.", pos, 2)); return e; }
     }
 
-    private static LanguageStage? ParseStage(List<Token> ts, List<LanguageDiagnostic> d, LanguageExecutionLimits executionLimits, bool hasPipelineInput)
+    private static LanguageStage? ParseStage(List<Token> ts, List<LanguageDiagnostic> d, LanguageExecutionLimits executionLimits, bool hasPipelineInput, LanguageVersions versions)
     {
         if (ts.Count == 0) return null;
         string cmd = ts[0].Text.ToLowerInvariant(); var pos = new List<Token>(); var opts = new Dictionary<string, Token>(StringComparer.Ordinal);
+        var v2 = IsTextChangeProfile(versions);
         var allowed = cmd switch
         {
-            "read" or "cat" or "gc" or "files.read" => new[] { "max-bytes" },
+            "read" or "cat" or "gc" or "files.read" => v2 ? new[] { "max-bytes", "start-line", "line-count" } : new[] { "max-bytes" },
             "find" or "fd" or "files.find" => new[] { "max-depth", "max-entries", "max-matches", "max-output-bytes" },
-            "search" or "grep" or "files.search-text" => new[] { "include", "exclude", "max-depth", "max-entries", "max-matches", "max-output-bytes", "max-file-bytes", "max-bytes-scanned" },
+            "search" or "grep" or "files.search-text" => v2 ? new[] { "include", "exclude", "max-depth", "max-entries", "max-matches", "max-output-bytes", "max-file-bytes", "max-bytes-scanned", "context-lines" } : new[] { "include", "exclude", "max-depth", "max-entries", "max-matches", "max-output-bytes", "max-file-bytes", "max-bytes-scanned" },
+            "diff" or "merge" when IsTextChangeProfile(versions) => Array.Empty<string>(),
             "take" or "count" => Array.Empty<string>(), _ => null
         };
         if (allowed is null) { d.Add(new("LUBAN_COMMAND", "Unknown command in the selected profile.", ts[0].Offset, ts[0].Length)); return null; }
@@ -361,7 +386,10 @@ public static class LanguageCompiler
             {
                 case "read": case "cat": case "gc": case "files.read":
                     if (pos.Count > 1) return Arity();
-                    return new ReadStage(pos.Count == 0 ? null : LanguagePaths.Normalize(pos[0].Text), IntOpt(opts, "max-bytes", Math.Min(1_048_576, executionLimits.MaxReadBytes)));
+                    var hasStart = opts.ContainsKey("start-line"); var hasCount = opts.ContainsKey("line-count");
+                    if (hasStart != hasCount) return Arity();
+                    return new ReadStage(pos.Count == 0 ? null : LanguagePaths.Normalize(pos[0].Text), IntOpt(opts, "max-bytes", Math.Min(1_048_576, executionLimits.MaxReadBytes)),
+                        hasStart ? IntOpt(opts, "start-line", 1) : null, hasCount ? IntOpt(opts, "line-count", 1) : null);
                 case "find": case "fd": case "files.find":
                     if (pos.Count is < 1 or > 2) return Arity();
                     string root = pos.Count == 2 ? LanguagePaths.Normalize(pos[0].Text, true) : "";
@@ -372,8 +400,10 @@ public static class LanguageCompiler
                     var query = pos[0].Text; var searchRoot = pos.Count == 2 ? LanguagePaths.Normalize(pos[1].Text, true) : hasPipelineInput ? null : "";
                     var include = opts.TryGetValue("include", out var inc) ? LanguageGlob.Normalize(inc.Text) : "**";
                     var exclude = opts.TryGetValue("exclude", out var exc) ? LanguageGlob.Normalize(exc.Text) : null;
-                    return new SearchStage(query, searchRoot, include, exclude, new SearchLimits(IntOpt(opts,"max-depth",16), IntOpt(opts,"max-entries",Math.Min(10_000, executionLimits.MaxResourceCalls)), IntOpt(opts,"max-matches",Math.Min(1000, executionLimits.MaxValues)), IntOpt(opts,"max-output-bytes",Math.Min(262_144, executionLimits.MaxOutputBytes)), IntOpt(opts,"max-file-bytes",Math.Min(1_048_576, executionLimits.MaxReadBytes)), IntOpt(opts,"max-bytes-scanned",Math.Min(10_485_760, executionLimits.MaxReadBytes))));
+                    return new SearchStage(query, searchRoot, include, exclude, new SearchLimits(IntOpt(opts,"max-depth",16), IntOpt(opts,"max-entries",Math.Min(10_000, executionLimits.MaxResourceCalls)), IntOpt(opts,"max-matches",Math.Min(1000, executionLimits.MaxValues)), IntOpt(opts,"max-output-bytes",Math.Min(262_144, executionLimits.MaxOutputBytes)), IntOpt(opts,"max-file-bytes",Math.Min(1_048_576, executionLimits.MaxReadBytes)), IntOpt(opts,"max-bytes-scanned",Math.Min(10_485_760, executionLimits.MaxReadBytes))), IntOpt(opts, "context-lines", 0));
                 case "take": if (pos.Count != 1 || !int.TryParse(pos[0].Text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var take)) return Arity(); return new TakeStage(take);
+                case "diff": if (pos.Count != 2) return Arity(); return new DiffStage(LanguagePaths.Normalize(pos[0].Text), LanguagePaths.Normalize(pos[1].Text), Penghou.Luban.Changes.TextChangeOptions.Default);
+                case "merge": if (pos.Count != 3) return Arity(); return new MergeStage(LanguagePaths.Normalize(pos[0].Text), LanguagePaths.Normalize(pos[1].Text), LanguagePaths.Normalize(pos[2].Text), Penghou.Luban.Changes.TextChangeOptions.Default);
                 case "count": if (pos.Count != 0) return Arity(); return new CountStage();
                 default: return null;
             }
@@ -388,8 +418,12 @@ public static class LanguageCompiler
         if (!int.TryParse(t.Text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var n)) throw new ArgumentException();
         return n;
     }
-    private static LanguageValueKind OutputOf(LanguageStage s) => s switch { ReadStage => LanguageValueKind.FileContent, FindStage => LanguageValueKind.FileReference, SearchStage => LanguageValueKind.SearchMatch, TakeStage t => LanguageValueKind.FileReference, CountStage => LanguageValueKind.Count, _ => throw new ArgumentException() };
-    private static bool VersionsMatch(LanguageVersions v) => v is not null && v == new LanguageVersions();
+    private static LanguageValueKind OutputOf(LanguageStage s, LanguageVersions versions) => s switch { ReadStage { StartLine: not null } => LanguageValueKind.FileWindow, ReadStage => LanguageValueKind.FileContent, FindStage => LanguageValueKind.FileReference, SearchStage when IsTextChangeProfile(versions) => LanguageValueKind.SearchContextMatch, SearchStage { ContextLines: > 0 } => LanguageValueKind.SearchContextMatch, SearchStage => LanguageValueKind.SearchMatch, DiffStage => LanguageValueKind.TextDiff, MergeStage => LanguageValueKind.TextMerge, TakeStage t => LanguageValueKind.FileReference, CountStage => LanguageValueKind.Count, _ => throw new ArgumentException() };
+    private static bool VersionsMatch(LanguageVersions v) => v is not null && (v == new LanguageVersions() || IsTextChangeProfile(v));
+    private static bool IsTextChangeProfile(LanguageVersions v) => v == new LanguageVersions(LanguageProfile.TextChangeLanguageVersion,
+        LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion, LanguageProfile.TextChangeProviderProfile);
+    private static void ValidateTextOptions(Penghou.Luban.Changes.TextChangeOptions? options, List<LanguageDiagnostic> diagnostics)
+    { if (options is null || !options.IsValid) diagnostics.Add(new("LUBAN_TEXT_LIMIT", "Text-change bounds are invalid for the selected profile.")); }
     private static bool ValidOptions(LanguageCompilerOptions o, out string error)
     {
         error = "Compiler bounds and execution limits must be positive and no greater than this frozen profile.";

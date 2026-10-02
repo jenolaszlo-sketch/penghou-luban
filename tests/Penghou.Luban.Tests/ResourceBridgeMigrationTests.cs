@@ -161,7 +161,7 @@ public sealed class ResourceBridgeMigrationTests : IDisposable
         Assert.Contains(auth.Requests, request => request.RelativePath == "big.txt");
     }
 
-    private FileEffectRuntime Runtime(IEffectAuthorizer authorizer) => new(new("workspace", _root), authorizer);
+    private FileEffectRuntime Runtime(IEffectAuthorizer authorizer) => new(new("workspace"), TestLocalProvider.Create("workspace", _root), authorizer);
 
     private sealed class Capture : IEffectAuthorizer
     {
@@ -182,4 +182,3 @@ public sealed class ResourceBridgeMigrationTests : IDisposable
         }
     }
 }
-

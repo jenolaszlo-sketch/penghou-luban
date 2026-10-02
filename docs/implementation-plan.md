@@ -1,10 +1,53 @@
 # Luban implementation plan
 
+## Luban completion boundary
+
+Luban is the language and its runtime for bounded AI tool effects. Its completion
+criteria cover syntax, typed operations, analysis/preflight, provider execution,
+preview/application semantics, documentation and conformance. Hosts inject
+required authorization and journal contracts; those contracts do not require
+Hufu or a workflow engine.
+
+Hufu is an optional authorization integration with its own qualification and
+release work. Zhinu owns workflow durability outside Luban and is not a Luban
+implementation milestone, dependency or completion gate. A host may use it
+independently. Preserve required admission, live resource checks, start/outcome
+evidence and explicit uncertain results without selecting a particular host.
+
+
+## Resource-abstraction correction — 2026-10-02
+
+Follow the [resource-abstractions architecture](../../Penghou/docs/resource-abstractions-architecture.md) and
+[public-type inventory](../../Penghou/docs/resource-abstractions-inventory.md).
+The corrected provider injection, opaque versions and pure patch materialization
+are implemented and candidate-package qualified. See the selected
+[ADR 0003](../../Penghou/docs/decisions/0003-replaceable-resource-providers.md).
+Published-package adoption remains pending under RA-5C; historical Local slices
+below remain regression evidence.
+
+- [x] **RA-1/RA-3 (candidate qualification):** inject narrow IO contracts into file, language and preview
+  runtimes; isolate physical roots, Local constructors and Local-specific public
+  executor configuration in host/integration composition.
+- [x] **RA-G4:** keep diff/merge/text materialization in Luban and qualify a
+  conditional persistence contract before replacing Local's locked patch path.
+  Preserve semantic admission, exact bytes/versions, final checks and outcomes.
+- [ ] **RA-5C:** consume the corrected published IO packages through pinned
+  PackageReferences, remove normal-build sibling-source dependencies, and verify
+  neutral dependency/API closure plus read/preview/execution integration.
+  See the [CI/publication/adoption sequence](../../Penghou/docs/resource-abstractions-corrective-plan.md).
+- [ ] **VFS-5, deferred:** normal execution over an injected snapshot/overlay
+  provider as a separate explicit mode. Existing capture-only WhatIf remains
+  read-only with CanCommit=false.
+- [ ] **VFS-7, deferred:** apply an approved immutable delta only through fresh
+  real-resource admission, version checks, durable starts and reconciliation.
+
+Do not add Hufu policy, a VFS implementation, HTTP/process redesign or broad
+package migration to this correction. Each handoff cites its RA/VFS gate.
+
 Status: Revised delivery order, 2026-10-02. Steps 1–6 have implemented narrow
 profiles: shared bounded Local reader, minimal language/IR, capture-only WhatIf,
 standalone exact-target executor, and bounded exact-target batch execution with
-trusted-host recovery inspection. There is no durable store or production
-Hufu/Zhinu adapter. The controlled namespace profile does not establish general
+trusted-host recovery inspection. Optional authority and workflow integrations have separate completion gates. The controlled namespace profile does not establish general
 alias confinement or atomic multi-file writes. See the [runtime](typed-effect-runtime.md),
 [language](language-syntax-spec.md), [preview/commit](preview-resolution-commit-barrier.md),
 [single-patch execution profile](single-patch-execution-profile.md), and
@@ -13,15 +56,15 @@ alias confinement or atomic multi-file writes. See the [runtime](typed-effect-ru
 ## Current delivery status
 
 The first six implementation steps have landed as narrow profiles. The next
-work is governed and durable host integration, plus broader effect profiles.
+work is published IO adoption and the D4–D7 language/runtime delivery track.
 Resolve implementation details within those bounds and record decisions; block
 only unsupported guarantees.
 
 The delivered foundation is a real Windows Local reader and separate single-file
 and narrow batch writer/executors. WhatIf remains read-only and cannot dispatch
 either. Host-supplied admission and recovery snapshots are required; no durable
-store or production Hufu/Zhinu integration is implied. Next work qualifies the
-governed adapters and broader effects.
+store or production host integration is implied. Next work qualifies the
+authorized file/application primitives and broader language profiles.
 
 ## Delivery order and ownership
 
@@ -33,7 +76,7 @@ governed adapters and broader effects.
 | 4 | Capture-only WhatIf; Local read-only, no callback/dispatch — complete | Luban; steps 2–3 and exact capture contracts |
 | 5 | Standalone exact-target patch executor over Local NTFS patcher — implemented | Penghou Local + Luban; required host admission/start/journal contract |
 | 6 | Narrow exact-target batches and trusted-host recovery inspection — implemented | Luban/host; qualified single-file execution |
-| 7 | Real Hufu authority and Zhinu durable integration | Adapters; qualified providers and Hufu/CedarSharp readiness |
+| Optional integration | Hufu authorization adapter | Hufu-owned qualification; not a Luban completion gate |
 | D1–D7 | Independent diff/merge delivery track; pure text first, authorized files/import/application later | Luban; [ADR 0005](decisions/0005-deterministic-diff-merge.md), existing provider/execution boundaries |
 
 Hufu contracts/store work may proceed independently. Local development uses
@@ -126,9 +169,9 @@ selection, and repeated-target patch nodes block every later node with
 segments without virtual state. Bound aggregate I/O, work, plan size, and
 authorization calls. Each actual provider read preserves its ResourceVersion.
 Copy only the exact immutable TextPatch byte payload with offsets and replacement
-bytes into the plan. Do not retain or expose generated proposed full-file bytes;
-original and proposed full-file bytes stay unretained. File observations expose
-only hashes, lengths, and versions. `IPreviewAuthorizer` uses Preflight,
+bytes into the plan. Capture catalogue v2 retains owned immutable original and proposed bytes for
+exact materialization checks, within the aggregate plan budget. Their release
+is protected; observations also bind hashes, lengths, and opaque versions. `IPreviewAuthorizer` uses Preflight,
 TargetAdmission, ResourceAccess, ProposalAdmission, and Release; WhatIf reruns
 preflight.
 
@@ -146,8 +189,9 @@ The separate `SinglePatchExecutor` accepts one complete exact-target captured
 plan. It validates compiled path/payload and observation alignment, binds the
 concrete request to fresh whole-plan admission, and requires current authority,
 revision/fence and committed start evidence at the locked-object boundary.
-`LocalWorkspacePatcher` uses the same exclusive NTFS file handle for version
-verification, patching, flush and postimage checks. Required completion evidence
+`LocalWorkspaceWriter` uses the same exclusive NTFS file handle for version
+verification, conditional persistence, flush and postimage checks. Luban owns
+strict UTF-8 patch materialization before that boundary. Required completion evidence
 reports NoMutation, Completed or Ambiguous; document bounds apply throughout.
 WhatIf remains read-only and CanCommit stays false.
 
@@ -211,59 +255,38 @@ implemented here.
 
 The batch is sequential and non-atomic. On any failure execution stops and
 retains per-node outcomes; earlier completed writes are not rolled back. It does
-not claim power-loss durability, Hufu/Zhinu enforcement, distributed fencing,
+not claim power-loss durability, production authority enforcement, distributed fencing,
 or general filesystem namespace confinement. See the
 [batch execution profile](batch-execution-profile.md) for the contract and gates.
 
-## Step 7: governed and durable hosts — in progress
+## Optional authorization integration
 
-Hufu now has bounded current-snapshot contracts and a narrow known-root Luban
-read-language authorizer prototype. It requires an authenticated host source,
-policy evaluator, and mandatory decision recorder; it does not ship those host
-identity/issuer services or a complete grant/approval/delegation lifecycle.
-Hufu.Cedar supplies the locally qualified fixed-schema evaluator; its optional
-SQLite prototype now persists current-state publication/revocation and required
-decisions. Core store/source/recorder bindings still require explicit host
-authentication and exact evaluator capture. See the [Hufu current authority
-profile](../../Penghou.Hufu/docs/current-authority-profile.md) and [store profile](../../Penghou.Hufu/docs/durable-authority-store.md).
+Luban accepts explicit host-selected authorizers and required start/outcome
+journal contracts. Implementations must preserve exact request/resource binding,
+current checks, evidence failures and uncertain outcomes. Luban qualifies those
+neutral contracts and provider behavior without depending on a specific authority
+library or durable workflow runtime.
 
-The remaining step implements and qualifies a separate governed adapter after
-the authority/store contracts and Cedar profile are ready. Bind real grants,
-exclusions, approvals, revocation and consistent whole-plan admission. Integrate
-Zhinu's actual journal, revision/fence/start ordering and reconciliation. The
-Hufu authority and the Zhinu journal have separate logical ownership. The new
-[co-located SQLite start profile](../../Penghou.Hufu/docs/operation-start-profile.md)
-can commit their current checks, runtime acquisition and required start evidence
-in one physical database transaction. Sequential snapshot lookup/acquisition
-still cannot order revocation. This profile blocks new starts after revocation;
-earlier starts may finish. Complete plan admission, locked-object host wiring and
-exact terminal-outcome recovery remain the next Step 7 gate. Neutral cores do not import Hufu, Cedar or
-workflow-engine types.
-
-Qualify Guyabano/local first. Marang/supervisor follows with authenticated exact
-request/provider/subject/attempt bindings, durable pending work, stale/conflicting
-result rejection and no late-receipt resumption. Supervisor success alone cannot
-prove which resources were accessed.
-
-Gate: real scoped find/search/read/patch, known/dynamic denial, revocation/start
-races, failed mandatory evidence, restart, exact approvals and inspectable receipts.
-Earlier standalone/test slices are not governed releases.
+Hufu can supply authorization through its optional adapters. Its policy, grants,
+approvals, credential lifecycle and production host qualification belong in
+[Hufu's integration plan](../../Penghou.Hufu/docs/luban-integration.md).
+Zhinu is outside Luban's implementation and release criteria.
 
 ## Diff and merge delivery track
 
 [ADR 0005](decisions/0005-deterministic-diff-merge.md) adopts the reviewed
 [diff/merge specification](diff-merge-spec.md). This track adds generic Luban
-change primitives without Git or a second writer. D1–D2 are implemented and [locally qualified](text-change-profile.md); later gates remain planned. Pure work can proceed alongside
-Step 7. Governed application still depends on Step 7's complete host/outcome path.
+change primitives without Git or a second writer. D1–D2 are implemented and [locally qualified](text-change-profile.md); D4–D6 are also implemented and qualified for the initial leaf boundary; D7 remains deferred. See the [completion ledger](leaf-completion.md). Application must qualify the required neutral
+admission, live-check and start/outcome contracts; optional Hufu adoption is separate.
 
 | Stage | Delivery | Prerequisite / completion gate |
 | --- | --- | --- |
 | D1 — implemented | Immutable bounded text model and deterministic shortest-edit diff | Strict UTF-8, byte ranges, frozen tie-breaking, independent reconstruction and byte-faithful fixtures |
 | D2 — implemented | Deterministic three-way text merge and structured conflicts | D1; whole-operation budgets, conservative overlap rules, no side preference/markers/clean result on incomplete work |
 | D3 — implemented | Versioned structured serialization, display hunks/unified export and narrow modified-file import | D1–D2; canonical vectors, closed grammar, hostile-input caps, exact original context; import is untrusted |
-| D4 | Authorized same-workspace file diff/merge and read-only patch materialization/validation | D1–D3 and qualified shared reader; every input/release checked, complete before/after hashes/lengths/provider versions, no ambient paths |
-| D5 | Existing-file candidate bridge to capture and single/batch execution | D4, existing executor profiles and required host; complete known set admission, locked-object stale checks, mandatory start/outcomes; governed release also requires Step 7 |
-| D6 | Optional language descriptors, typed pipeline values and requirement mappings | Qualified D4–D5 profiles; new catalogue/IR version, full preflight, no widening current language v1 |
+| D4 — implemented | Authorized same-workspace file diff/merge and read-only patch materialization/validation | D1–D3 and qualified shared reader; every input/release checked, complete before/after hashes/lengths/provider versions, no ambient paths |
+| D5 — implemented | Existing-file candidate bridge to capture and single/batch execution | D4, existing executor profiles and required host; complete known set admission, locked-object stale checks, mandatory start/outcomes; qualify the neutral host contracts |
+| D6 — implemented | Optional language descriptors, typed pipeline values and requirement mappings | Qualified D4–D5 profiles; new catalogue/IR version, full preflight, no widening current language v1 |
 | D7 | Directory/snapshot views, cross-workspace inputs, structural merge and optional rename detection | Stable D4–D6 plus qualified coverage/manifest/provider semantics; exclusions never become deletions |
 
 ### D1–D2: initial pure text profile
@@ -324,8 +347,8 @@ execution requires explicit host admission of the non-atomic profile and exact
 per-node Completed/NoMutation/Ambiguous receipts; no automatic retry or rollback.
 Test denied later targets before the first write, live stale resources, start
 evidence failure, partial completion and uncertain recovery through the bridge.
-Complete governed Hufu/Zhinu mutation wiring is a prerequisite for that advertised
-profile; the narrow start gate alone does not complete it.
+Qualify these requirements through neutral host contracts and real providers.
+A particular Hufu or workflow-runtime integration is not a prerequisite.
 
 Register source syntax only after matching typed providers pass. Preserve new
 schema/catalogue identities and closed pure operations; do not adopt the proposal's
@@ -338,9 +361,9 @@ provider/authority contracts; never silently downgrade unsupported kinds.
 
 ## Later work and implementation discipline
 
-Add Exists/Stat/ReadRange, broader mutations, Git, web and developer profiles as
+Bounded v2 line windows and search context/spans are implemented. Add Exists/Stat, byte-range reads, broader mutations, Git, web and developer profiles as
 consumers and qualification justify them. Directory metadata, Copy/Delete/Move/
-CreateDirectory, regex/context and richer results need their own contracts.
+CreateDirectory, regex and further result types need their own contracts.
 Git must reject/disable configured helpers, hooks, filters, pagers, incidental
 writes, implicit remote access and excluded-content disclosure before strict
 discovery. Build/test remains explicit ApprovedTools. No shell fallback,
@@ -352,4 +375,4 @@ gate. Avoid empty placeholder packages. Run meaningful suites for changed behavi
 repeat/broaden only for a new change, failure or unresolved concern. Keep
 implemented status distinct from planned guarantees throughout delivery.
 
-Current Step 7 evidence: the narrow Hufu typed Cedar/known-root read consumer passes 44 tests on each runtime, with 86 shared-provider and 167 Luban regressions passing. Unicode/short-name alias guards are qualified locally. See [the Hufu qualification record](../../Penghou.Hufu/docs/authority-profile-qualification.md). The optional Hufu current-state/evidence SQLite slice is now locally qualified, including a real Cedar/Luban read and failed required recording. See the [store qualification](../../Penghou.Hufu/docs/durable-authority-store-qualification.md). The narrow co-located Hufu/Zhinu start transaction is now implemented and [qualified with 95 Hufu tests per runtime](../../Penghou.Hufu/docs/operation-start-qualification.md). Governed single-patch admission/resource checks and exact terminal-outcome recovery are next; complete authority lifecycle and batch integration remain open. Step 7 is not complete.
+Current Luban qualification: 336 tests pass on each of net8.0 and net10.0 against candidate IO packages. Published IO adoption remains RA-5C. Optional Hufu integration evidence and remaining host-specific gates belong in Hufu documentation.

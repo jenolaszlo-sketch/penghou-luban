@@ -44,8 +44,8 @@ public sealed class PreviewCompilerTests
         var result = PreviewCompiler.Compile(new PreviewStage[]
             { new FilePatchStage("A.txt", [Patch(0, 1, 0x42)]) }, Workspace);
         Assert.True(result.Succeeded, string.Join("; ", result.Diagnostics.Select(d => d.Code)));
-        Assert.Equal("f9863b107047f7925f852b951f2ed3a7f391e0f1dd0d983294eaffd79a417d0e", result.Document!.Identity);
-        Assert.Equal("06cf34965d6021555136135e9459d37618b3a40d0b448edc2008f56e4f9873fd", result.Document.Nodes[0].Identity);
+        Assert.Equal("68cfd2f59c7890bec7ecc12e2161c141e0fd7bc581b6fc0119d3a81851aaef3b", result.Document!.Identity);
+        Assert.Equal("4b94be5e01cc5f6eeb321b45de8ef0ee423b0f08908b64e66d620eb555e71ec1", result.Document.Nodes[0].Identity);
     }
 
     [Fact]
@@ -87,8 +87,10 @@ public sealed class PreviewCompilerTests
         var frozenPatch = Assert.IsType<ExactPatchOperation>(node.Operation).Patches;
         var observation = new PreviewObservation(node.Identity, "a", ResourceAction.ReadFile, new RequestIdentity("request-1"),
             new ResourceVersion("provider-v1"), "original-digest", 1, true);
-        var proposal = new CapturedFilePatch("a", new ResourceVersion("provider-v1"), "original-digest", 1,
-            "proposed-digest", 1, frozenPatch);
+        var original = new ImmutableBytes([0x41]);
+        var proposed = new ImmutableBytes([0x42]);
+        var proposal = new CapturedFilePatch("a", new ResourceVersion("provider-v1"), original.Sha256, 1,
+            proposed.Sha256, proposed.Length, frozenPatch, original, proposed);
         var resolved = new ResolvedPreviewNode(node.Identity, node.Descriptor, PreviewNodeState.Proposed, PreviewSelection.AuthorizedView,
             [proposal], [], null);
         var invocation = new EffectInvocation("subject", "effect", "attempt");

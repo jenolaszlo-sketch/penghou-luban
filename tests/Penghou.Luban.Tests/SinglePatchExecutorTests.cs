@@ -11,6 +11,68 @@ namespace Penghou.Luban.Execution.Tests;
 
 public sealed class SinglePatchExecutorTests
 {
+    [Fact]
+    public async Task SelfConsistentForgedProposedBytesAreRejectedBeforeAdmission()
+    {
+        using var workspace = new TestWorkspace();
+        var old = Encoding.UTF8.GetBytes("old");
+        workspace.WriteBytes("note.txt", old);
+        var capture = await Capture(workspace, [Patch("note.txt", old, 0, 3, "new")]);
+        var originalNode = capture.Plan.Nodes[0];
+        var proposal = originalNode.Proposals[0];
+        var forged = new ImmutableBytes(Encoding.UTF8.GetBytes("bad"));
+        var forgedProposal = proposal with { ProposedContent = forged, ProposedSha256 = forged.Sha256 };
+        var forgedNode = originalNode with { Proposals = Array.AsReadOnly(new[] { forgedProposal }) };
+        var nodes = new[] { forgedNode };
+        var identity = PreviewIdentity.Plan(capture.Plan.Invocation, capture.Document, capture.Plan.Observations, nodes);
+        var forgedPlan = new ResolvedEffectPlan(capture.Plan.Invocation, capture.Document, identity,
+            capture.Plan.Observations, nodes);
+        var host = new RecordingHost();
+
+        var result = await Executor(workspace, host).ExecuteAsync(capture.Document, forgedPlan, "op-forged-content");
+
+        Assert.Equal(ResourceFailureKind.InvalidRequest, result.Failure);
+        Assert.Empty(host.Events);
+        Assert.Equal(old, workspace.ReadBytes("note.txt"));
+    }
+
+    [Fact]
+    public async Task CapturedPayloadBeyondRetainedPlanBudgetIsRejectedBeforeAdmission()
+    {
+        using var workspace = new TestWorkspace();
+        var old = Encoding.UTF8.GetBytes("old");
+        workspace.WriteBytes("note.txt", old);
+        var limits = new PreviewLimits(MaxReadBytes: 16384, MaxFileBytes: 8192,
+            MaxReplacementBytes: 8192, MaxPlanBytes: 8192);
+        var original = new ImmutableBytes(Enumerable.Repeat((byte)'o', 5000).ToArray());
+        var proposed = new ImmutableBytes(Enumerable.Repeat((byte)'p', 5000).ToArray());
+        var patch = new FrozenTextPatch(0, original.Length, new ImmutableBytes(proposed.ToArray()));
+        var operation = new ExactPatchOperation("note.txt", Array.AsReadOnly(new[] { patch }), null);
+        var documentIdentity = PreviewIdentity.Document(workspace.Id, limits, new PreviewOperation[] { operation });
+        var nodeIdentity = PreviewIdentity.Node(documentIdentity, 0);
+        var document = new CompiledPreviewDocument(workspace.Id, limits, documentIdentity,
+            new[] { new CompiledPreviewNode(0, nodeIdentity, operation) });
+        var invocation = new EffectInvocation("subject", "effect", "oversized-plan");
+        var proposal = new CapturedFilePatch("note.txt", new ResourceVersion("opaque-v1"),
+            original.Sha256, original.Length, proposed.Sha256, proposed.Length,
+            Array.AsReadOnly(new[] { patch }), original, proposed);
+        var node = new ResolvedPreviewNode(nodeIdentity, "files.patch", PreviewNodeState.Proposed,
+            PreviewSelection.Unspecified, Array.AsReadOnly(new[] { proposal }), Array.Empty<string>(), null);
+        var observation = new PreviewObservation(nodeIdentity, "note.txt", ResourceAction.ReadFile,
+            new RequestIdentity("request-v1"), new ResourceVersion("opaque-v1"), original.Sha256, original.Length, true);
+        var nodes = new[] { node };
+        var observations = new[] { observation };
+        var identity = PreviewIdentity.Plan(invocation, document, observations, nodes);
+        var forgedPlan = new ResolvedEffectPlan(invocation, document, identity, observations, nodes);
+        var host = new RecordingHost();
+
+        var result = await Executor(workspace, host).ExecuteAsync(document, forgedPlan, "op-oversized-retained-plan");
+
+        Assert.Equal(ResourceFailureKind.InvalidRequest, result.Failure);
+        Assert.Empty(host.Events);
+        Assert.Equal(old, workspace.ReadBytes("note.txt"));
+    }
+
     [Theory]
     [InlineData(LocalPatchNamespace.Unspecified)]
     [InlineData((LocalPatchNamespace)999)]
@@ -21,7 +83,7 @@ public sealed class SinglePatchExecutorTests
         workspace.WriteBytes("note.txt", old);
         var capture = await Capture(workspace, [Patch("note.txt", old, 0, 3, "new")]);
         var host = new RecordingHost();
-        var executor = new SinglePatchExecutor(new WorkspaceReference(workspace.Id.Value, workspace.Root), host, namespaceProfile);
+        var executor = new SinglePatchExecutor(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root, namespaceProfile), host);
 
         var result = await executor.ExecuteAsync(capture.Document, capture.Plan, "op-unsupported-namespace");
 
@@ -119,7 +181,7 @@ public sealed class SinglePatchExecutorTests
 
         var result = await Executor(workspace, host).ExecuteAsync(capture.Document, capture.Plan, "op-success");
 
-        Assert.True(result.Succeeded);
+        Assert.True(result.Succeeded, $"{result.Failure}: {string.Join(" | ", host.Events)}");
         Assert.Equal(Encoding.UTF8.GetBytes("new"), workspace.ReadBytes("note.txt"));
         Assert.Equal("admit", host.Events[0]);
         var start = host.Events.IndexOf("start");
@@ -230,7 +292,7 @@ public sealed class SinglePatchExecutorTests
         var executor = Executor(workspace, host);
 
         var wrongDoc = await executor.ExecuteAsync(otherDocCapture.Document, capture.Plan, "op-wrong-doc");
-        var wrongWorkspace = await new SinglePatchExecutor(new WorkspaceReference("different-id", workspace.Root), host, LocalPatchNamespace.HostControlled)
+        var wrongWorkspace = await new SinglePatchExecutor(new WorkspaceReference("different-id"), TestLocalProvider.Create("different-id", workspace.Root), host)
             .ExecuteAsync(capture.Document, capture.Plan, "op-wrong-workspace");
 
         Assert.Equal(ResourceFailureKind.InvalidRequest, wrongDoc.Failure);
@@ -342,13 +404,13 @@ public sealed class SinglePatchExecutorTests
         var compilation = PreviewCompiler.Compile(stages, workspace.Id, limits);
         var document = compilation.Document ?? throw new Xunit.Sdk.XunitException("Expected preview document to compile.");
         var invocation = new EffectInvocation("subject", "effect", Guid.NewGuid().ToString("N"));
-        var preview = await new PreviewRuntime(new WorkspaceReference(workspace.Id.Value, workspace.Root), new PermitPreviewAuthority())
+        var preview = await new PreviewRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), new PermitPreviewAuthority())
             .WhatIfAsync(invocation, document);
         return (document, preview.Plan ?? throw new Xunit.Sdk.XunitException($"Expected captured plan, got {preview.Status}."), invocation, preview.Status);
     }
 
     private static SinglePatchExecutor Executor(TestWorkspace workspace, RecordingHost host) =>
-        new(new WorkspaceReference(workspace.Id.Value, workspace.Root), host, LocalPatchNamespace.HostControlled);
+        new(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), host);
 
     private static ResourceVersion Version(byte[] bytes) => new("local-read-v1:sha256:" + Sha256(bytes));
     private static string Sha256(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));

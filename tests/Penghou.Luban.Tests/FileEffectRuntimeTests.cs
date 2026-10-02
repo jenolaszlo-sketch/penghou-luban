@@ -12,7 +12,7 @@ public sealed class FileEffectRuntimeTests : IDisposable
 
     public FileEffectRuntimeTests() => Directory.CreateDirectory(_root);
     public void Dispose() { try { Directory.Delete(_root, recursive: true); } catch { } }
-    private FileEffectRuntime Runtime(IEffectAuthorizer auth) => new(new WorkspaceReference("workspace-A", _root), auth);
+    private FileEffectRuntime Runtime(IEffectAuthorizer auth) => new(new WorkspaceReference("workspace-A"), TestLocalProvider.Create("workspace-A", _root), auth);
 
     [Fact]
     public async Task Read_authorizes_exact_request_before_touching_target()
@@ -150,4 +150,3 @@ public sealed class FileEffectRuntimeTests : IDisposable
         }
     }
 }
-

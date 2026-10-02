@@ -12,6 +12,45 @@ namespace Penghou.Luban.Execution.Tests;
 public sealed class BatchPatchExecutorTests
 {
     [Fact]
+    public async Task CapturedPayloadBeyondRetainedPlanBudgetIsRejectedBeforeAdmission()
+    {
+        using var workspace = new TestWorkspace();
+        var old = Encoding.UTF8.GetBytes("old");
+        workspace.WriteBytes("a.txt", old);
+        var limits = new PreviewLimits(MaxReadBytes: 16384, MaxFileBytes: 8192,
+            MaxReplacementBytes: 8192, MaxPlanBytes: 8192);
+        var original = new ImmutableBytes(Enumerable.Repeat((byte)'o', 5000).ToArray());
+        var proposed = new ImmutableBytes(Enumerable.Repeat((byte)'p', 5000).ToArray());
+        var patch = new FrozenTextPatch(0, original.Length, new ImmutableBytes(proposed.ToArray()));
+        var operation = new ExactPatchOperation("a.txt", Array.AsReadOnly(new[] { patch }), null);
+        var documentIdentity = PreviewIdentity.Document(workspace.Id, limits, new PreviewOperation[] { operation });
+        var nodeIdentity = PreviewIdentity.Node(documentIdentity, 0);
+        var document = new CompiledPreviewDocument(workspace.Id, limits, documentIdentity,
+            new[] { new CompiledPreviewNode(0, nodeIdentity, operation) });
+        var invocation = new EffectInvocation("subject", "effect", "oversized-plan");
+        var proposal = new CapturedFilePatch("a.txt", new ResourceVersion("opaque-v1"),
+            original.Sha256, original.Length, proposed.Sha256, proposed.Length,
+            Array.AsReadOnly(new[] { patch }), original, proposed);
+        var node = new ResolvedPreviewNode(nodeIdentity, "files.patch", PreviewNodeState.Proposed,
+            PreviewSelection.Unspecified, Array.AsReadOnly(new[] { proposal }), Array.Empty<string>(), null);
+        var observation = new PreviewObservation(nodeIdentity, "a.txt", ResourceAction.ReadFile,
+            new RequestIdentity("request-v1"), new ResourceVersion("opaque-v1"), original.Sha256, original.Length, true);
+        var nodes = new[] { node };
+        var observations = new[] { observation };
+        var identity = PreviewIdentity.Plan(invocation, document, observations, nodes);
+        var forgedPlan = new ResolvedEffectPlan(invocation, document, identity, observations, nodes);
+        var host = new RecordingHost();
+
+        var result = await Executor(workspace, host).ExecuteAsync(document, forgedPlan, "oversized-retained-plan");
+
+        Assert.Equal(ResourceFailureKind.InvalidRequest, result.Failure);
+        Assert.Equal(0, host.AdmissionCalls);
+        Assert.Empty(host.ResourceChecks);
+        Assert.Empty(host.Starts);
+        Assert.Equal(old, workspace.ReadBytes("a.txt"));
+    }
+
+    [Fact]
     public async Task WholeBatchDenialAndLastTargetDenialPerformNoReadsOrWrites()
     {
         using var workspace = new TestWorkspace();
@@ -73,7 +112,7 @@ public sealed class BatchPatchExecutorTests
 
         var result = await Executor(workspace, host).ExecuteAsync(capture.Document, capture.Plan, "ordered");
 
-        Assert.True(result.Succeeded);
+        Assert.True(result.Succeeded, $"{result.Failure}: {string.Join(" | ", host.Events)}");
         Assert.Null(host.LastAdmission!.Predecessor);
         Assert.Equal(new[] { "new", "new" }, new[] { Text(workspace, "a.txt"), Text(workspace, "b.txt") });
         var firstStart = host.Events.FindIndex(e => e.StartsWith("start:", StringComparison.Ordinal));
@@ -439,7 +478,8 @@ public sealed class BatchPatchExecutorTests
         Assert.Equal(1, bytesHost.AdmissionCalls);
         Assert.Empty(bytesHost.ResourceChecks);
 
-        // Static single-patch minimum is 9; a batch requires 15 for one path.
+        // Static single-patch minimum is 9; batch accounting includes provider readiness,
+        // semantic patch authorization, conditional write, and start/outcome calls.
         var callsLimited = await Capture(workspace, [Patch("a.txt", old, "new")],
             new PreviewLimits(MaxResourceCalls: 9));
         var callsHost = new RecordingHost();
@@ -450,8 +490,8 @@ public sealed class BatchPatchExecutorTests
     }
 
     [Theory]
-    [InlineData("a.txt", 15)]
-    [InlineData("dir/a.txt", 18)]
+    [InlineData("a.txt", 19)]
+    [InlineData("dir/a.txt", 22)]
     public async Task ExactMinimumCallBudgetSucceedsAndOneLessRejectsBeforeAdmission(string path, int exactCalls)
     {
         using var workspace = new TestWorkspace();
@@ -475,7 +515,7 @@ public sealed class BatchPatchExecutorTests
         var host = new RecordingHost();
         var result = await Executor(workspace, host).ExecuteAsync(exact.Document, exact.Plan, "tight-calls-" + exactCalls);
 
-        Assert.True(result.Succeeded);
+        Assert.True(result.Succeeded, $"{result.Failure}: {string.Join(" | ", host.Events)}");
         Assert.Equal(exactCalls, host.AdmissionCalls + host.InspectionCalls + host.ResourceChecks.Count +
             host.Starts.Count + host.CompletionCalls);
         Assert.Equal("new", Text(workspace, path));
@@ -489,7 +529,7 @@ public sealed class BatchPatchExecutorTests
         workspace.WriteBytes("a.txt", old);
         var stages = new PreviewStage[] { Patch("a.txt", old, "new") };
         var below = await Capture(workspace, stages,
-            new PreviewLimits(MaxReadBytes: 8, MaxFileBytes: 3, MaxResourceCalls: 15));
+            new PreviewLimits(MaxReadBytes: 8, MaxFileBytes: 3, MaxResourceCalls: 19));
         var belowHost = new RecordingHost();
         var tooSmall = await Executor(workspace, belowHost).ExecuteAsync(below.Document, below.Plan, "tight-bytes-below");
 
@@ -501,10 +541,10 @@ public sealed class BatchPatchExecutorTests
         Assert.Equal(old, workspace.ReadBytes("a.txt"));
 
         var exact = await Capture(workspace, stages,
-            new PreviewLimits(MaxReadBytes: 9, MaxFileBytes: 3, MaxResourceCalls: 15));
+            new PreviewLimits(MaxReadBytes: 9, MaxFileBytes: 3, MaxResourceCalls: 19));
         var exactHost = new RecordingHost();
         var succeeds = await Executor(workspace, exactHost).ExecuteAsync(exact.Document, exact.Plan, "tight-bytes-exact");
-        Assert.True(succeeds.Succeeded);
+        Assert.True(succeeds.Succeeded, $"{succeeds.Failure}: {string.Join(" | ", exactHost.Events)}");
         Assert.Equal("new", Text(workspace, "a.txt"));
     }
 
@@ -538,13 +578,13 @@ public sealed class BatchPatchExecutorTests
         var document = compilation.Document ?? throw new Xunit.Sdk.XunitException("Expected preview document to compile: " +
             string.Join(",", compilation.Diagnostics.Select(d => d.Code)));
         var invocation = new EffectInvocation("subject", "effect", Guid.NewGuid().ToString("N"));
-        var preview = await new PreviewRuntime(new WorkspaceReference(workspace.Id.Value, workspace.Root), new PermitPreviewAuthority())
+        var preview = await new PreviewRuntime(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), new PermitPreviewAuthority())
             .WhatIfAsync(invocation, document);
         return (document, preview.Plan ?? throw new Xunit.Sdk.XunitException($"Expected a resolved preview, got {preview.Status}."));
     }
 
     private static BatchPatchExecutor Executor(TestWorkspace workspace, RecordingHost host) =>
-        new(new WorkspaceReference(workspace.Id.Value, workspace.Root), host, LocalPatchNamespace.HostControlled);
+        new(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), host);
 
     private static string PathOf(PatchResourceCheck check) => check.Resource.Resource switch
     {
@@ -694,7 +734,7 @@ public sealed class BatchPatchExecutorTests
 
         private static bool SameBinding(BatchAdmissionRequest left, BatchAdmissionRequest right) =>
             left.Plan.Identity == right.Plan.Identity && left.Document.Identity == right.Document.Identity &&
-            left.Predecessor == right.Predecessor && left.Namespace == right.Namespace &&
+            left.Predecessor == right.Predecessor &&
             left.Operations.Select(operation => operation.OperationId).SequenceEqual(right.Operations.Select(operation => operation.OperationId));
 
         internal RecordingHost CloneForRestart()

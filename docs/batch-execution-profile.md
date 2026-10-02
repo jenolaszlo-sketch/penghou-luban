@@ -3,7 +3,8 @@
 Status: Implemented narrow standalone profile, 2026-10-01. Qualification is recorded in [the batch audit](batch-qualification-2026-10-01.md). `BatchPatchExecutor` executes an
 ordered complete captured manifest containing 1–64 distinct exact-file patches.
 It uses the existing [single-file boundary](single-patch-execution-profile.md)
-and [Local NTFS patcher](../../Penghou/docs/local-patch-profile.md). Selected
+and an injected conditional byte writer; the physical
+[Local NTFS profile](../../Penghou/docs/local-patch-profile.md) is composed by the host. Selected
 globs, incomplete coverage, unresolved nodes and deferred tools cannot execute.
 WhatIf remains read-only and `CanCommit` remains false. Textual mutation syntax
 is not added to the read language.
@@ -17,12 +18,14 @@ Required `IBatchPatchExecutionHost.AdmitAsync` admits the entire manifest before
 protected target access. Partial grants require a newly captured, explicitly
 admitted plan; the executor does not select an allowed prefix.
 
-After authoritative recovery inspection, it checks the patch, read and ancestry
+After authoritative recovery inspection, it checks semantic patch, write, read and ancestry
 metadata rights of **every remaining target before reading any file contents**.
 It then reads and verifies every remaining original version, hash and length and
-recomputes the captured postimage. A known denied or stale later target therefore
-blocks the first write. These readiness reads retain no full-file content in
-the manifest or result. The document bounds apply across the entire call: the
+verifies the captured postimage's hash. Pure materialization against the bounded
+immutable captured original already proves the exact edits before admission.
+A known denied or stale later target therefore blocks the first write.
+The capture retains protected original/proposed buffers; readiness creates no
+additional persistent copy. The document bounds apply across the entire call: the
 aggregate readiness read, locked original read and post-write verification must
 fit `MaxReadBytes`; host admission, inspection, resource checks, starts and
 completion acknowledgments share `MaxResourceCalls`. One document deadline covers

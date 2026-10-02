@@ -10,5 +10,13 @@
     <Copyright>Copyright (c) 2026 Jenő Konrád László</Copyright>
     <Authors>Penghou.Luban contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">0.1.0-preview.1</PackageVersion>
+    <Version Condition="'$(Version)' == ''">$(PackageVersion)</Version>
+    <RepositoryUrl>https://github.com/jenolaszlo-sketch/penghou-luban</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/jenolaszlo-sketch/penghou-luban</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 </Project>

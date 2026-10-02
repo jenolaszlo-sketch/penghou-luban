@@ -1,6 +1,6 @@
 using System.Text;
+using System.Security.Cryptography;
 using Penghou.IO.Abstractions;
-using Penghou.IO.Local;
 using Penghou.Luban.Language;
 using Penghou.Luban.Resolution;
 
@@ -8,7 +8,7 @@ namespace Penghou.Luban.Execution;
 
 /// <summary>One complete exact-target plan and its concrete mutation identity.</summary>
 public sealed record PatchAdmissionRequest(string OperationId, CompiledPreviewDocument Document,
-    ResolvedEffectPlan Plan, string WriterProfile, LocalPatchNamespace Namespace,
+    ResolvedEffectPlan Plan, string WriterProfile,
     HostInvocation Invocation, RequestIdentity ResourceRequestIdentity);
 public sealed record PatchResourceCheck(PatchAdmissionRequest Admission, ResourceAuthorizationRequest Resource);
 public sealed record PatchStartRequest(PatchAdmissionRequest Admission, MutationStartRequest Mutation);
@@ -40,14 +40,15 @@ public sealed record PatchExecutionResult(ResourceFailureKind? Failure, Resource
 public sealed class SinglePatchExecutor
 {
     private readonly WorkspaceReference _workspace;
+    private readonly IWorkspaceProvider _provider;
     private readonly IPatchExecutionHost _host;
-    private readonly LocalPatchNamespace _namespace;
     private static readonly UTF8Encoding Utf8 = new(false, true);
-    public SinglePatchExecutor(WorkspaceReference workspace, IPatchExecutionHost host, LocalPatchNamespace namespaceProfile)
+    public SinglePatchExecutor(WorkspaceReference workspace, IWorkspaceProvider provider, IPatchExecutionHost host)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        if (_provider.Workspace.Value != workspace.Id) throw new ArgumentException("Provider workspace does not match the logical workspace.", nameof(provider));
         _host = host ?? throw new ArgumentNullException(nameof(host));
-        _namespace = namespaceProfile;
     }
 
     public ValueTask<PatchExecutionResult> ExecuteAsync(CompiledPreviewDocument document,
@@ -62,9 +63,12 @@ public sealed class SinglePatchExecutor
         ResolvedEffectPlan plan, string operationId, int? selectedNode, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (document is null || plan is null) return new(ResourceFailureKind.InvalidRequest);
+        if (!selectedNode.HasValue &&
+            (document.Nodes.Count != 1 || document.Nodes[0].Operation is not ExactPatchOperation || !plan.CaptureComplete))
+            return new(ResourceFailureKind.Unsupported);
         if (!Validate(document, plan, operationId)) return new(ResourceFailureKind.InvalidRequest);
-        if (_namespace != LocalPatchNamespace.HostControlled) return new(ResourceFailureKind.Unsupported);
-        if (!OperatingSystem.IsWindows()) return new(ResourceFailureKind.Unsupported);
+        if (!_provider.Capabilities.SupportsConditionalWrites || string.IsNullOrWhiteSpace(_provider.Capabilities.WriteProfile)) return new(ResourceFailureKind.Unsupported);
         var index = selectedNode ?? 0;
         if (index < 0 || index >= document.Nodes.Count || (!selectedNode.HasValue && document.Nodes.Count != 1) ||
             document.Nodes[index].Operation is not ExactPatchOperation || plan.Nodes[index].Proposals.Count != 1 || !plan.CaptureComplete)
@@ -74,7 +78,7 @@ public sealed class SinglePatchExecutor
             proposal.OriginalByteLength > document.Limits.MaxFileBytes || proposal.ProposedByteLength > document.Limits.MaxFileBytes ||
             (long)proposal.OriginalByteLength + proposal.ProposedByteLength > document.Limits.MaxReadBytes)
             return new(ResourceFailureKind.TooLarge);
-        var admission = CreateAdmission(document, plan, operationId, index, _namespace);
+        var admission = CreateAdmission(document, plan, operationId, index, _provider.Capabilities.WriteProfile!);
         var request = CreateRequest(admission, proposal);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(document.Limits.TimeoutMilliseconds);
@@ -88,9 +92,9 @@ public sealed class SinglePatchExecutor
             if (decision?.Status != LanguageAuthorityStatus.Permit)
                 return new(decision?.Status == LanguageAuthorityStatus.Deny ? ResourceFailureKind.AuthorizationDenied : ResourceFailureKind.AuthorizationUnavailable);
             var boundary = new Boundary(_host, admission, proposal);
-            var writer = new LocalWorkspacePatcher(document.Workspace, _workspace.FullRootPath, boundary, boundary,
-                new LocalPatchOptions(document.Limits.MaxFileBytes, document.Limits.MaxReadBytes, document.Limits.TimeoutMilliseconds, _namespace));
-            var result = await writer.PatchFileAsync(request, deadline.Token).ConfigureAwait(false);
+            var writer = _provider.OpenWriter(boundary, boundary, new(document.Limits.MaxFileBytes,
+                document.Limits.MaxReadBytes, document.Limits.TimeoutMilliseconds));
+            var result = await writer.WriteFileAsync(request, deadline.Token).ConfigureAwait(false);
             return new(result.Failure, result.Succeeded ? result.Value : null);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -98,20 +102,19 @@ public sealed class SinglePatchExecutor
     }
 
     internal static PatchAdmissionRequest CreateAdmission(CompiledPreviewDocument document, ResolvedEffectPlan plan,
-        string operationId, int nodeIndex, LocalPatchNamespace namespaceProfile)
+        string operationId, int nodeIndex, string writerProfile)
     {
         var invocation = new HostInvocation(operationId, plan.Invocation.SubjectId, plan.Invocation.EffectId,
             plan.Invocation.AttemptId, plan.Identity, document.Identity, default);
-        var draft = new PatchAdmissionRequest(operationId, document, plan, LocalWorkspacePatcher.ProviderProfile,
-            namespaceProfile, invocation, default);
+        var draft = new PatchAdmissionRequest(operationId, document, plan, writerProfile, invocation, default);
         var identity = ResourceRequestIdentity.Compute(CreateRequest(draft, plan.Nodes[nodeIndex].Proposals[0]));
         return draft with { Invocation = invocation with { RequestIdentity = identity }, ResourceRequestIdentity = identity };
     }
 
-    private static FilePatchRequest CreateRequest(PatchAdmissionRequest admission, CapturedFilePatch proposal) =>
-        new(admission.Invocation, admission.Document.Workspace, new(proposal.RelativePath), proposal.OriginalVersion,
-            Array.AsReadOnly(proposal.Patches.Select(p => new TextPatch(p.StartOffset, p.DeleteLength, p.ReplacementUtf8.ToArray())).ToArray()),
-            new(admission.Document.Limits.MaxPatchCount, admission.Document.Limits.MaxReplacementBytes, admission.Document.Limits.MaxFileBytes));
+    internal static FileWriteRequest CreateRequest(PatchAdmissionRequest admission, CapturedFilePatch proposal) =>
+        new(admission.Invocation, admission.Document.Workspace, new(proposal.RelativePath),
+            proposal.ProposedContent.ToArray(), new(admission.Document.Limits.MaxFileBytes),
+            new(WritePreconditionKind.MustMatchVersion, proposal.OriginalVersion));
 
     internal bool Validate(CompiledPreviewDocument? doc, ResolvedEffectPlan? plan, string? operationId)
     {
@@ -120,6 +123,8 @@ public sealed class SinglePatchExecutor
             plan.DocumentIdentity != doc.Identity || plan.Limits != doc.Limits) return false;
         try
         {
+            if (PreviewIdentity.RetainedPlanSize(plan.Invocation, doc, plan.Observations, plan.Nodes) > doc.Limits.MaxPlanBytes)
+                return false;
             if (plan.Nodes.Count != doc.Nodes.Count) return false;
             for (var index = 0; index < doc.Nodes.Count; index++)
             {
@@ -133,11 +138,27 @@ public sealed class SinglePatchExecutor
                     if (resolved.Selection != PreviewSelection.Unspecified || resolved.UnresolvedReason is not null || resolved.Proposals.Count != 1) return false;
                     var proposal = resolved.Proposals[0];
                     if (proposal.RelativePath != exact.Path || exact.ExpectedVersion is { } expected && expected != proposal.OriginalVersion ||
-                        proposal.OriginalVersion.Value != "local-read-v1:sha256:" + proposal.OriginalSha256 ||
-                        proposal.Patches.Count != exact.Patches.Count) return false;
+                        proposal.Patches.Count != exact.Patches.Count || proposal.ProposedContent is null ||
+                        proposal.OriginalContent is null || proposal.OriginalContent.Length != proposal.OriginalByteLength ||
+                        proposal.OriginalContent.Sha256 != proposal.OriginalSha256 ||
+                        proposal.ProposedContent.Length != proposal.ProposedByteLength || proposal.ProposedContent.Sha256 != proposal.ProposedSha256) return false;
                     for (var p = 0; p < exact.Patches.Count; p++)
                         if (proposal.Patches[p].StartOffset != exact.Patches[p].StartOffset || proposal.Patches[p].DeleteLength != exact.Patches[p].DeleteLength ||
                             !proposal.Patches[p].ReplacementUtf8.Span.SequenceEqual(exact.Patches[p].ReplacementUtf8.Span)) return false;
+                    var originalBytes = proposal.OriginalContent.ToArray();
+                    try
+                    {
+                        var materialized = PreviewRuntime.Apply(originalBytes, exact.Patches, doc.Limits, CancellationToken.None);
+                        try
+                        {
+                            if (materialized.Length != proposal.ProposedByteLength ||
+                                !CryptographicOperations.FixedTimeEquals(SHA256.HashData(materialized), Convert.FromHexString(proposal.ProposedSha256)) ||
+                                !materialized.AsSpan().SequenceEqual(proposal.ProposedContent.ToArray())) return false;
+                        }
+                        finally { CryptographicOperations.ZeroMemory(materialized); }
+                    }
+                    catch { return false; }
+                    finally { CryptographicOperations.ZeroMemory(originalBytes); }
                     var reads = plan.Observations.Where(o => o.NodeIdentity == node.Identity).ToArray();
                     if (reads.Length != 1 || reads[0].Action != ResourceAction.ReadFile || reads[0].RelativePath != exact.Path ||
                         !reads[0].IsComplete || reads[0].Version != proposal.OriginalVersion || reads[0].Digest != proposal.OriginalSha256 ||
@@ -164,29 +185,37 @@ public sealed class SinglePatchExecutor
         private bool _startCalled;
         private bool _completed;
         private int _calls = 1; // Whole-plan admission; reserve start and completion.
-        public ValueTask<ResourceAuthorizationDecision> AuthorizeAsync(ResourceAuthorizationRequest request, CancellationToken ct = default)
+        public async ValueTask<ResourceAuthorizationDecision> AuthorizeAsync(ResourceAuthorizationRequest request, CancellationToken ct = default)
         {
             if (request.Invocation != admission.Invocation || request.SnapshotRequestIdentity != admission.ResourceRequestIdentity)
-                return ValueTask.FromResult(new ResourceAuthorizationDecision(AuthorizationStatus.Deny));
+                return new ResourceAuthorizationDecision(AuthorizationStatus.Deny);
             if (++_calls > admission.Plan.Limits.MaxResourceCalls - 2)
-                return ValueTask.FromResult(new ResourceAuthorizationDecision(AuthorizationStatus.Unavailable));
+                return new ResourceAuthorizationDecision(AuthorizationStatus.Unavailable);
             var role = request.Resource switch
             {
                 ResourceBinding.WorkspaceFile f => f.Workspace == admission.Plan.Workspace && f.Path.Value == proposal.RelativePath &&
-                    request.Action is ResourceAction.ReadFile or ResourceAction.PatchFile,
+                    request.Action is ResourceAction.ReadFile or ResourceAction.PatchFile or ResourceAction.WriteFile,
                 ResourceBinding.WorkspaceEntry e => e.Workspace == admission.Plan.Workspace && request.Action == ResourceAction.ReadMetadata &&
                     (e.Path.Value.Length == 0 || e.Path.Value == proposal.RelativePath || proposal.RelativePath.StartsWith(e.Path.Value + "/", StringComparison.Ordinal)),
                 _ => false
             };
-            return role ? host.AuthorizeResourceAsync(new(admission, request), ct) :
-                ValueTask.FromResult(new ResourceAuthorizationDecision(AuthorizationStatus.Deny));
+            if (!role) return new ResourceAuthorizationDecision(AuthorizationStatus.Deny);
+            if (request.Action == ResourceAction.WriteFile)
+            {
+                if (++_calls > admission.Plan.Limits.MaxResourceCalls - 2)
+                    return new ResourceAuthorizationDecision(AuthorizationStatus.Unavailable);
+                var patchDecision = await host.AuthorizeResourceAsync(new(admission,
+                    request with { Action = ResourceAction.PatchFile }), ct).ConfigureAwait(false);
+                if (patchDecision?.Status != AuthorizationStatus.Permit) return patchDecision ?? new(AuthorizationStatus.Unavailable);
+            }
+            return await host.AuthorizeResourceAsync(new(admission, request), ct).ConfigureAwait(false);
         }
         public async ValueTask<MutationStartDecision> StartAsync(MutationStartRequest request, CancellationToken ct = default)
         {
             if (_startCalled || ++_calls > admission.Plan.Limits.MaxResourceCalls - 1 || request.Invocation != admission.Invocation || request.RequestIdentity != admission.ResourceRequestIdentity ||
                 request.Workspace != admission.Plan.Workspace || request.Path.Value != proposal.RelativePath ||
                 request.ProviderProfile != admission.WriterProfile || string.IsNullOrWhiteSpace(request.ObjectIdentity) ||
-                request.OriginalVersion != proposal.OriginalVersion || request.ProposedVersion.Value != "local-read-v1:sha256:" + proposal.ProposedSha256 ||
+                request.OriginalVersion != proposal.OriginalVersion || string.IsNullOrWhiteSpace(request.ProposedVersion.Value) || request.ProposedVersion.Value.Length > 256 ||
                 request.OriginalByteLength != proposal.OriginalByteLength || request.ProposedByteLength != proposal.ProposedByteLength)
                 return new(MutationStartStatus.Deny);
             _startCalled = true;

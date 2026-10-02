@@ -1,22 +1,29 @@
 # Shared I/O integration build
 
-The Windows Read/Find/literal SearchText API uses Penghou.IO.Local, with neutral
-contracts and the canonical request codec from Penghou.IO.Abstractions. Target
-filesystem I/O is centralized in the shared reader. The required IEffectAuthorizer
+Read/Find/literal SearchText, the read language, capture and patch execution take
+an explicit `IWorkspaceProvider`. Neutral runtime code imports no Local provider
+and carries no physical root. IO.Abstractions owns contracts; IO.Protocols owns
+the shared codec and namespace profile. Tests and the sample compose IO.Local.
+The required IEffectAuthorizer
 still admits the semantic request and checks every concrete resource. This is a
 standalone neutral bridge; Hufu grants, approvals and persistent scope mappings
 are not implemented.
 
-## Reproducible checkout
+## Default packages and explicit source development
+
+Default builds pin IO.Abstractions and IO.Protocols `0.1.0-preview.1`; tests and
+the sample pin IO.Local separately. A normal package build needs no Penghou
+checkout. Publication and actual NuGet.org restores are tracked in the
+[corrective ledger](../../Penghou/docs/resource-abstractions-corrective-plan.md).
+Local candidate-feed qualification is intermediate, not a published release.
 
 Use the .NET 10 SDK and sibling checkouts named Penghou.Luban and Penghou.
-The qualified Penghou revision is `ea9b7302b56d4e61ca0700b5d26bfc7ca8e81a1b`. The shared source is available
-at [GitHub](https://github.com/jenolaszlo-sketch/penghou). Check out that revision
-in the shared repository before running:
+The shared source is available at [GitHub](https://github.com/jenolaszlo-sketch/penghou).
+Use the coordinated corrective changes in both repositories, then run:
 
 ```powershell
 dotnet test ..\Penghou\Penghou.IO.slnx -c Release
-dotnet test Penghou.Luban.sln -c Release
+dotnet test Penghou.Luban.sln -c Release -p:UsePenghouSource=true
 ```
 
 The projects target net8.0 and net10.0. Both runtimes are needed for the full
@@ -24,14 +31,12 @@ suite. PenghouRoot defaults to the sibling directory and can be supplied as an
 absolute MSBuild property for another layout:
 
 ```powershell
-dotnet test Penghou.Luban.sln -c Release -p:PenghouRoot=C:\source\Penghou
+dotnet test Penghou.Luban.sln -c Release -p:UsePenghouSource=true -p:PenghouRoot=C:\source\Penghou
 ```
 
-Project references carry the requested configuration across solution boundaries.
-No unpublished NuGet dependency, copied contract implementation or package
-publication is used. Updating the pinned revision requires the same provider
-and migration suites; this document records a qualified source revision, not a
-runtime revision-verification mechanism.
+Source references are opt-in development tooling. The final delivery gate uses
+pinned published packages and real integration tests without the IO source
+checkout. No contract implementation is copied into a consumer.
 
 ## Semantic and resource identities
 
@@ -75,7 +80,7 @@ execution are implemented. Language authorization uses Preflight, EffectStart,
 ResourceAccess, and Release phases; direct legacy effects retain their required
 IEffectAuthorizer. Capture-only resolution is implemented and includes no
 writer callback. Separate single-target and [bounded exact-target batch executors](batch-execution-profile.md)
-use the controlled-namespace NTFS patcher, fresh admission and required
+use an injected conditional byte writer, fresh admission and required
 start/outcome evidence. Batch recovery uses authoritative host snapshots and
 validated completion receipts. Selected-glob execution, production recovery
 stores, and Hufu/Zhinu integration remain later deliveries.

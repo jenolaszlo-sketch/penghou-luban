@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Text;
 using Penghou.IO.Abstractions;
-using Penghou.IO.Local;
 using Penghou.Luban.Language;
 using Penghou.Luban.Resolution;
 
@@ -11,7 +10,7 @@ namespace Penghou.Luban.Execution;
 public sealed record BatchPredecessor(string SegmentId, string PlanIdentity);
 
 public sealed record BatchAdmissionRequest(string SegmentId, CompiledPreviewDocument Document,
-    ResolvedEffectPlan Plan, string WriterProfile, LocalPatchNamespace Namespace,
+    ResolvedEffectPlan Plan, string WriterProfile,
     IReadOnlyList<PatchAdmissionRequest> Operations, BatchPredecessor? Predecessor);
 
 public enum BatchRecoveryState { NotStarted, Completed, NoMutation, Uncertain }
@@ -64,17 +63,17 @@ public sealed class BatchPatchExecutor
     private const int CompletionTimeoutMilliseconds = 5000;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     private readonly WorkspaceReference _workspace;
+    private readonly IWorkspaceProvider _provider;
     private readonly IBatchPatchExecutionHost _host;
-    private readonly LocalPatchNamespace _namespace;
     private readonly SinglePatchExecutor _validator;
 
-    public BatchPatchExecutor(WorkspaceReference workspace, IBatchPatchExecutionHost host,
-        LocalPatchNamespace namespaceProfile)
+    public BatchPatchExecutor(WorkspaceReference workspace, IWorkspaceProvider provider, IBatchPatchExecutionHost host)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        if (_provider.Workspace.Value != workspace.Id) throw new ArgumentException("Provider workspace does not match the logical workspace.", nameof(provider));
         _host = host ?? throw new ArgumentNullException(nameof(host));
-        _namespace = namespaceProfile;
-        _validator = new SinglePatchExecutor(workspace, new DenyAllPatchHost(), namespaceProfile);
+        _validator = new SinglePatchExecutor(workspace, provider, new DenyAllPatchHost());
     }
 
     public async ValueTask<BatchExecutionResult> ExecuteAsync(CompiledPreviewDocument document,
@@ -83,7 +82,7 @@ public sealed class BatchPatchExecutor
     {
         var empty = Array.AsReadOnly(Array.Empty<BatchRecoveryEntry>());
         if (cancellationToken.IsCancellationRequested) return new(ResourceFailureKind.ProviderFailure, empty);
-        if (_namespace != LocalPatchNamespace.HostControlled || !OperatingSystem.IsWindows())
+        if (!_provider.Capabilities.SupportsReads || !_provider.Capabilities.SupportsConditionalWrites || string.IsNullOrWhiteSpace(_provider.Capabilities.WriteProfile))
             return new(ResourceFailureKind.Unsupported, empty);
         if (!ValidId(segmentId) ||
             (predecessor is not null && (!ValidId(predecessor.SegmentId) || predecessor.SegmentId == segmentId ||
@@ -100,16 +99,16 @@ public sealed class BatchPatchExecutor
         for (var i = 0; i < count; i++)
         {
             operationIds[i] = MakeOperationId(segmentId, document.Nodes[i].Identity);
-            admissions[i] = SinglePatchExecutor.CreateAdmission(document, plan, operationIds[i], i, _namespace);
+            admissions[i] = SinglePatchExecutor.CreateAdmission(document, plan, operationIds[i], i, _provider.Capabilities.WriteProfile!);
         }
-        var batch = new BatchAdmissionRequest(segmentId, document, plan, LocalWorkspacePatcher.ProviderProfile,
-            _namespace, Array.AsReadOnly((PatchAdmissionRequest[])admissions.Clone()), predecessor);
+        var batch = new BatchAdmissionRequest(segmentId, document, plan, _provider.Capabilities.WriteProfile!,
+            Array.AsReadOnly((PatchAdmissionRequest[])admissions.Clone()), predecessor);
 
-        // Worst-case host calls: admit + inspect, then (S+3) whole-target
-        // prechecks, (S+1) reader checks, and (S+6) writer/read/start/receipt.
+        // Worst-case host calls include semantic PatchFile rechecks paired with
+        // both concrete WriteFile authorization boundaries.
         long minimumCalls = 2;
         foreach (var node in document.Nodes)
-            minimumCalls = checked(minimumCalls + 3L * ((ExactPatchOperation)node.Operation).Path.Split('/').Length + 10);
+            minimumCalls = checked(minimumCalls + 3L * ((ExactPatchOperation)node.Operation).Path.Split('/').Length + 14);
         if (minimumCalls > document.Limits.MaxResourceCalls) return new(ResourceFailureKind.TooLarge, empty);
 
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -183,10 +182,7 @@ public sealed class BatchPatchExecutor
                     new WorkspacePath(proposal.RelativePath), new IoLimits(readLimit));
                 var readIdentity = ResourceRequestIdentity.Compute(draft);
                 var request = draft with { Invocation = draft.Invocation with { RequestIdentity = readIdentity } };
-                var reader = new LocalWorkspaceReader(document.Workspace, _workspace.FullRootPath,
-                    new ReadBoundary(_host, batch, admissions[i], proposal.RelativePath, readIdentity, callBudget),
-                    new LocalReaderOptions { MaxFileBytes = document.Limits.MaxFileBytes,
-                        OperationTimeout = TimeSpan.FromMilliseconds(document.Limits.TimeoutMilliseconds) });
+                var reader = _provider.OpenReader(new ReadBoundary(_host, batch, admissions[i], proposal.RelativePath, readIdentity, callBudget));
                 using (reader)
                 {
                     var result = await reader.ReadFileAsync(request, deadline.Token).ConfigureAwait(false);
@@ -195,19 +191,8 @@ public sealed class BatchPatchExecutor
                     try
                     {
                         if (original.Length != proposal.OriginalByteLength || result.Value.Version != proposal.OriginalVersion ||
-                            "local-read-v1:sha256:" + Convert.ToHexString(SHA256.HashData(original)) != proposal.OriginalVersion.Value)
+                            Convert.ToHexString(SHA256.HashData(original)) != proposal.OriginalSha256)
                             return new(ResourceFailureKind.PreconditionFailed, Array.AsReadOnly(entries));
-                        byte[] proposed;
-                        try { proposed = PreviewRuntime.Apply(original, proposal.Patches, document.Limits.MaxFileBytes, deadline.Token); }
-                        catch (OperationCanceledException) { throw; }
-                        catch { return new(ResourceFailureKind.InvalidRequest, Array.AsReadOnly(entries)); }
-                        try
-                        {
-                            if (proposed.Length != proposal.ProposedByteLength ||
-                                Convert.ToHexString(SHA256.HashData(proposed)) != proposal.ProposedSha256)
-                                return new(ResourceFailureKind.PreconditionFailed, Array.AsReadOnly(entries));
-                        }
-                        finally { CryptographicOperations.ZeroMemory(proposed); }
                     }
                     finally { CryptographicOperations.ZeroMemory(original); }
                 }
@@ -220,7 +205,7 @@ public sealed class BatchPatchExecutor
         // completed (for example a late hard-link alias); preserve receipts and
         // never claim all native constraints were preflighted.
         var bridge = new HostBridge(_host, batch, admissions, callBudget);
-        var executor = new SinglePatchExecutor(_workspace, bridge, _namespace);
+        var executor = new SinglePatchExecutor(_workspace, _provider, bridge);
         for (var i = completedPrefix; i < count; i++)
         {
             var state = new OperationState(operationIds[i], document.Nodes[i].Identity);
@@ -253,6 +238,8 @@ public sealed class BatchPatchExecutor
                 plan.Workspace != document.Workspace || plan.Limits != document.Limits)
                 return new(ResourceFailureKind.InvalidRequest);
             if (!plan.CaptureComplete) return new(ResourceFailureKind.Unsupported);
+            if (PreviewIdentity.RetainedPlanSize(plan.Invocation, document, plan.Observations, plan.Nodes) > document.Limits.MaxPlanBytes)
+                return new(ResourceFailureKind.InvalidRequest);
             var stages = new List<PreviewStage>(document.Nodes.Count);
             var clonedNodes = new List<ResolvedPreviewNode>(plan.Nodes.Count);
             var targets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -314,7 +301,7 @@ public sealed class BatchPatchExecutor
                     return new(ResourceFailureKind.InvalidRequest);
                 observations.Add(observation with { });
             }
-            if (PreviewIdentity.PlanSize(plan.Invocation, document, observations, clonedNodes) > document.Limits.MaxPlanBytes)
+            if (PreviewIdentity.RetainedPlanSize(plan.Invocation, document, observations, clonedNodes) > document.Limits.MaxPlanBytes)
                 return new(ResourceFailureKind.InvalidRequest);
             var frozenDocument = compilation.Document;
             var frozenPlan = new ResolvedEffectPlan(plan.Invocation, frozenDocument, plan.Identity,
@@ -334,7 +321,10 @@ public sealed class BatchPatchExecutor
         if (proposal is null || proposal.RelativePath != exact.Path || proposal.OriginalByteLength < 0 ||
             proposal.ProposedByteLength < 0 || proposal.OriginalByteLength > maxFileBytes || proposal.ProposedByteLength > maxFileBytes ||
             proposal.OriginalVersion.Value is null || proposal.OriginalVersion.Value.Length > 256 || !ValidHash(proposal.OriginalSha256) || !ValidHash(proposal.ProposedSha256) ||
-            proposal.OriginalVersion.Value != "local-read-v1:sha256:" + proposal.OriginalSha256 ||
+            proposal.OriginalContent is null || proposal.OriginalContent.Length != proposal.OriginalByteLength ||
+            proposal.OriginalContent.Sha256 != proposal.OriginalSha256 ||
+            proposal.ProposedContent is null || proposal.ProposedContent.Length != proposal.ProposedByteLength ||
+            proposal.ProposedContent.Sha256 != proposal.ProposedSha256 ||
             proposal.Patches is null || exact.Patches is null || proposal.Patches.Count is < 1 or > 128 ||
             exact.Patches.Count != proposal.Patches.Count) return true;
         long replacementBytes = 0;
@@ -384,7 +374,7 @@ public sealed class BatchPatchExecutor
         return entry.State switch
         {
             BatchRecoveryState.Completed => mutation.Outcome == MutationOutcome.Completed &&
-                mutation.ObservedVersion == new ResourceVersion("local-read-v1:sha256:" + proposal.ProposedSha256),
+                mutation.ObservedVersion == mutation.Start.ProposedVersion,
             BatchRecoveryState.NoMutation => mutation.Outcome == MutationOutcome.NoMutation &&
                 mutation.ObservedVersion == proposal.OriginalVersion,
             _ => false
@@ -400,7 +390,7 @@ public sealed class BatchPatchExecutor
             start.Workspace != admission.Plan.Workspace || start.Path.Value != proposal.RelativePath ||
             start.ProviderProfile != admission.WriterProfile || !ValidId(start.ObjectIdentity) ||
             start.OriginalVersion != proposal.OriginalVersion ||
-            start.ProposedVersion != new ResourceVersion("local-read-v1:sha256:" + proposal.ProposedSha256) ||
+            string.IsNullOrWhiteSpace(start.ProposedVersion.Value) || start.ProposedVersion.Value.Length > 256 ||
             start.OriginalByteLength != proposal.OriginalByteLength || start.ProposedByteLength != proposal.ProposedByteLength) return false;
         return mutation.Outcome is MutationOutcome.Completed or MutationOutcome.NoMutation ||
             (allowAmbiguous && mutation.Outcome == MutationOutcome.Ambiguous);
@@ -500,6 +490,14 @@ public sealed class BatchPatchExecutor
         {
             if (!Matches(check.Admission) || _index < 0 || check.Admission != admissions[_index] ||
                 !Allowed(batch.Document.Workspace, admissions[_index].Plan.Nodes[_index].Proposals[0].RelativePath, check.Resource)) return new(AuthorizationStatus.Deny);
+            if (check.Resource.Action == ResourceAction.WriteFile)
+            {
+                if (!calls.TryUse()) return new(AuthorizationStatus.Unavailable);
+                var patchDecision = await host.AuthorizeResourceAsync(batch,
+                    check with { Resource = check.Resource with { Action = ResourceAction.PatchFile } }, cancellationToken)
+                    .AsTask().WaitAsync(cancellationToken).ConfigureAwait(false);
+                if (patchDecision?.Status != AuthorizationStatus.Permit) return patchDecision ?? new(AuthorizationStatus.Unavailable);
+            }
             if (!calls.TryUse()) return new(AuthorizationStatus.Unavailable);
             return await host.AuthorizeResourceAsync(batch, check, cancellationToken).AsTask().WaitAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -537,7 +535,7 @@ public sealed class BatchPatchExecutor
 
         private bool Matches(PatchAdmissionRequest admission) => _index >= 0 && _index < admissions.Length &&
             admission == admissions[_index] && admission.Plan.Identity == batch.Plan.Identity &&
-            admission.Document.Identity == batch.Document.Identity && admission.Namespace == batch.Namespace;
+            admission.Document.Identity == batch.Document.Identity;
     }
 
     private static bool SameContext(HostInvocation a, HostInvocation b) => a.InvocationId == b.InvocationId &&
@@ -546,7 +544,7 @@ public sealed class BatchPatchExecutor
 
     private static bool Allowed(WorkspaceId workspace, string path, ResourceAuthorizationRequest request) => request.Action switch
     {
-        ResourceAction.ReadFile or ResourceAction.PatchFile => request.Resource is ResourceBinding.WorkspaceFile f &&
+        ResourceAction.ReadFile or ResourceAction.PatchFile or ResourceAction.WriteFile => request.Resource is ResourceBinding.WorkspaceFile f &&
             f.Workspace == workspace && f.Path.Value == path,
         ResourceAction.ReadMetadata => request.Resource is ResourceBinding.WorkspaceEntry e &&
             e.Workspace == workspace && IsAncestorOrSelf(e.Path.Value, path),

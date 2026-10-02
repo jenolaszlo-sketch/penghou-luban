@@ -59,7 +59,7 @@ public sealed class DirectFileEffectRuntimeRegressionTests : IDisposable
         Assert.Equal(EffectStatus.InvalidRequest, malformed.Status);
         Assert.Equal(EffectStatus.InvalidRequest, tooManyCodeUnits.Status);
         Assert.Empty(auth.Requests);
-        Assert.Throws<ArgumentException>(() => new FileEffectRuntime(new WorkspaceReference("\uD800", _root), auth));
+        Assert.Throws<ArgumentException>(() => new FileEffectRuntime(new WorkspaceReference("\uD800"), TestLocalProvider.Create("\uD800", _root), auth));
 
         var unicodeAuth = new ImmediateAuthorizer();
         var unicode = await Runtime(unicodeAuth).ReadAsync(new(new string('é', 129), "effect-A", "attempt-A"), new("missing.txt"));
@@ -175,7 +175,7 @@ public sealed class DirectFileEffectRuntimeRegressionTests : IDisposable
     public async Task Release_dependency_cap_fails_closed_without_returning_values()
     {
         await File.WriteAllTextAsync(Path.Combine(_root, "read.txt"), "contents");
-        var runtime = new FileEffectRuntime(new WorkspaceReference("workspace-A", _root), new ImmediateAuthorizer(),
+        var runtime = new FileEffectRuntime(new WorkspaceReference("workspace-A"), TestLocalProvider.Create("workspace-A", _root), new ImmediateAuthorizer(),
             new FileEffectRuntimeOptions(TimeSpan.FromSeconds(2), MaxReleaseDependencies: 1));
         var result = await runtime.ReadAsync(Invocation, new("read.txt"));
         Assert.Equal(EffectStatus.AuthorizationUnavailable, result.Status);
@@ -183,7 +183,7 @@ public sealed class DirectFileEffectRuntimeRegressionTests : IDisposable
     }
 
     private FileEffectRuntime Runtime(IEffectAuthorizer auth, TimeSpan? timeout = null) =>
-        new(new WorkspaceReference("workspace-A", _root), auth,
+        new(new WorkspaceReference("workspace-A"), TestLocalProvider.Create("workspace-A", _root), auth,
             new FileEffectRuntimeOptions(timeout ?? TimeSpan.FromSeconds(2)));
 
     private sealed class ImmediateAuthorizer : IEffectAuthorizer

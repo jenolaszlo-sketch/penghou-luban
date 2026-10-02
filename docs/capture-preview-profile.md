@@ -25,13 +25,17 @@ var draft = PreviewCompiler.Compile(new PreviewStage[]
 if (!draft.Succeeded)
     return; // Surface draft.Diagnostics under the host's disclosure policy.
 
-var runtime = new PreviewRuntime(hostWorkspace, hostPreviewAuthority);
+var runtime = new PreviewRuntime(hostWorkspace, hostProvider, hostPreviewAuthority);
 var readiness = await runtime.PreflightAsync(invocation, draft.Document!);
 var preview = await runtime.WhatIfAsync(invocation, draft.Document!);
 ```
 
 The host supplies `WorkspaceReference`, authenticated `EffectInvocation` and
-required `IPreviewAuthorizer`. There is no default permit. Static preflight calls
+an injected `IWorkspaceProvider` and required `IPreviewAuthorizer`. The logical
+workspace holds no physical root. Catalogue `windows-patch-capture-v2` retains
+bounded original/proposed bytes for exact semantic validation before execution;
+both buffers are protected content and count against `MaxPlanBytes`.
+There is no default permit. Static preflight calls
 authority only and does no protected target I/O. WhatIf runs preflight again.
 This capture profile has no writer callback, process/tool dispatcher, commit method, or batch-admission API. Separate `SinglePatchExecutor` and narrow `BatchPatchExecutor` entry points support exact-target writes; neither is callable from WhatIf. The batch API and its trusted-host recovery contract are documented in the [batch execution profile](batch-execution-profile.md).
 

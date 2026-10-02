@@ -1,8 +1,17 @@
 # Penghou.Luban contributor guidance
 
+Read the [resource-abstractions architecture](../Penghou/docs/resource-abstractions-architecture.md)
+before new provider/API work. RA-1/RA-3 target injected neutral IO capabilities
+and Local composition outside neutral runtime code. Existing profiles below
+remain the regression requirements until replacements qualify. Diff/merge stay
+here; provider persistence stays in IO. The current capture-only WhatIf rules
+do not describe deferred VFS-5 virtual execution, which requires a separate mode.
+Handoffs must cite the canonical document, RA/VFS ID, open gates and evidence.
+
 Read docs/typed-effect-runtime.md, docs/language-syntax-spec.md, and the decision/implementation documents
 before designing APIs. Luban owns typed requests/results, trusted effect
-descriptors, providers, and their conformance. Hufu owns authority, Fuwen control
+descriptors, language execution and its conformance. Shared resource providers
+live in Penghou.IO packages. Hufu owns authority, Fuwen control
 flow, and Zhinu durable execution. Neutral contracts must not depend on those
 projects, a host UI, MCP, or a particular agent.
 
@@ -14,7 +23,7 @@ reads/metadata/enumeration as well as writes; generic pre-write events are insuf
 
 Read docs/preview-resolution-commit-barrier.md and ADR 0004. Static preflight
 performs no protected target I/O; the current read language, IR, and capture-only
-WhatIf profile are implemented. A separate Local NTFS patcher supports writes only when the host explicitly selects `LocalPatchNamespace.HostControlled`; the default or unknown mode is Unsupported before I/O. The host must keep the root/drive/mount/directory namespace controlled against untrusted actors; this profile is not general filesystem confinement. The separate
+WhatIf profile are implemented. An injected conditional writer supplies persistence; IO.Local NTFS supports writes only when the host explicitly selects `LocalPatchNamespace.HostControlled`; the default or unknown mode is Unsupported before I/O. The host must keep the root/drive/mount/directory namespace controlled against untrusted actors; this profile is not general filesystem confinement. The separate
 `SinglePatchExecutor` implements one standalone exact-target patch with required
 host admission, live rights checks, serialized start evidence, and journaled
 outcomes. `BatchPatchExecutor` separately executes a complete ordered manifest
@@ -35,12 +44,18 @@ executable predicates, generic process escape hatch, or owned sandbox.
 Bounded typed dataflow and closed pure filters are specified under ADR 0002;
 they permit no shell pipes, callbacks, loops, or workflow decisions. The parser,
 compiler, canonical IR, and bounded `take`/`count` execution are implemented
-for the minimal read profile. Only read/find/literal search/take/count are
-supported; broader transforms and syntax remain pending. Typed build/test
+for the default v1 read profile. Opt-in v2 adds authorized file diff/merge,
+bounded line windows and UTF-8 search spans/context. Broader transforms and
+mutation source commands remain pending. Typed build/test
 requests remain broader ApprovedTools work, not strict operations.
 Preserve limits, exact resource binding, precondition/reconciliation requirements,
 trusted metadata, and explicit unknown/unsupported results. No security claims
 without boundary-level evidence.
+
+Use docs/leaf-completion.md as the current initial-baseline evidence and
+docs/consumer-impact.md to track package migrations and consumer effects. D1–D6
+are qualified for this bounded preview; D7 and additional profiles are separate
+scope. Hufu and workflow integration do not block Luban feature completion.
 
 Keep scaffolding minimal. Add runtime APIs and tests with meaningful behavior,
 not placeholder types. No publishing or remote repository creation is implied.

@@ -3,16 +3,23 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
     <PenghouRoot Condition="'$(PenghouRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\Penghou'))</PenghouRoot>
+    <UsePenghouSource Condition="'$(UsePenghouSource)' == ''">false</UsePenghouSource>
     <PackageId>Penghou.Luban</PackageId>
     <Title>Penghou Luban</Title>
-    <Description>Typed effect contracts and bounded providers for source workspace operations.</Description>
-    <IsPackable>false</IsPackable>
+    <Description>Authorization-aware language and bounded runtime for secure AI tool usage, with provider-neutral file operations and deterministic text changes.</Description>
+    <PackageTags>ai;tools;security;authorization;workspace;language;diff;merge</PackageTags>
+    <PackageReleaseNotes>Preview package. API and profiles remain subject to qualification.</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(UsePenghouSource)' != 'true'">
+    <PackageReference Include="Penghou.IO.Abstractions" Version="[0.1.0-preview.1]" />
+    <PackageReference Include="Penghou.IO.Protocols" Version="[0.1.0-preview.1]" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsePenghouSource)' == 'true'">
     <ProjectReference Include="$(PenghouRoot)\src\Penghou.IO.Abstractions\Penghou.IO.Abstractions.csproj" />
-    <ProjectReference Include="$(PenghouRoot)\src\Penghou.IO.Local\Penghou.IO.Local.csproj" />
+    <ProjectReference Include="$(PenghouRoot)\src\Penghou.IO.Protocols\Penghou.IO.Protocols.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>
-
-
-

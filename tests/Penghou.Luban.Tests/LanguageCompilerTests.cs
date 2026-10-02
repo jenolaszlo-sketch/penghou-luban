@@ -70,6 +70,92 @@ public sealed class LanguageCompilerTests
         Assert.False(suffix.Succeeded);
     }
 
+    [Fact]
+    public void Text_change_commands_require_an_explicit_v2_host_catalogue_and_bind_all_options()
+    {
+        var v1 = LanguageCompiler.Compile("diff a b", Workspace);
+        Assert.False(v1.Succeeded);
+
+        var versions = new LanguageVersions(LanguageProfile.TextChangeLanguageVersion,
+            LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion,
+            LanguageProfile.TextChangeProviderProfile);
+        var options = new LanguageCompilerOptions(Versions: versions);
+        var v2 = LanguageCompiler.Compile("#!luban2\ndiff a b", Workspace, options);
+        var v2Equivalent = LanguageCompiler.Compile("diff ./a ./b", Workspace, options);
+        var withDifferentLimits = LanguageCompiler.Compile(new IReadOnlyList<LanguageStage>[]
+        {
+            new LanguageStage[] { new DiffStage("a", "b", Penghou.Luban.Changes.TextChangeOptions.Default with { MaxWorkCells = 2_000_000 }) }
+        }, Workspace, options);
+        Assert.True(v2.Succeeded, string.Join("; ", v2.Diagnostics.Select(d => d.Code)));
+        Assert.True(v2Equivalent.Succeeded);
+        Assert.Equal(v2.Document!.Identity, v2Equivalent.Document!.Identity);
+        Assert.True(withDifferentLimits.Succeeded);
+        Assert.NotEqual(v2.Document.Identity, withDifferentLimits.Document!.Identity);
+        Assert.Equal("files.diff-text", v2.Document.Statements[0][0].Descriptor);
+    }
+
+    [Fact]
+    public void V2_is_host_selected_and_rejects_the_other_directive_and_invalid_text_bounds()
+    {
+        var versions = new LanguageVersions(LanguageProfile.TextChangeLanguageVersion,
+            LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion,
+            LanguageProfile.TextChangeProviderProfile);
+        Assert.Contains(LanguageCompiler.Compile("#!luban2\ndiff a b", Workspace).Diagnostics,
+            d => d.Code == "LUBAN_DIRECTIVE_VERSION");
+        Assert.Contains(LanguageCompiler.Compile("#!luban1\ndiff a b", Workspace,
+            new LanguageCompilerOptions(Versions: versions)).Diagnostics, d => d.Code == "LUBAN_DIRECTIVE_VERSION");
+        var badOptions = Penghou.Luban.Changes.TextChangeOptions.Default with { MaxWorkCells = 0 };
+        var result = LanguageCompiler.Compile(new IReadOnlyList<LanguageStage>[]
+        {
+            new LanguageStage[] { new MergeStage("base", "ours", "theirs", badOptions) }
+        }, Workspace, new LanguageCompilerOptions(Versions: versions));
+        Assert.False(result.Succeeded);
+        Assert.Contains(result.Diagnostics, d => d.Code is "LUBAN_TEXT_LIMIT" or "LUBAN_IR_INVALID");
+    }
+
+    [Fact]
+    public void V2_read_windows_and_search_context_are_closed_bounded_and_identity_bound()
+    {
+        var versions = new LanguageVersions(LanguageProfile.TextChangeLanguageVersion,
+            LanguageProfile.TextChangeIrVersion, LanguageProfile.TextChangeCatalogueVersion,
+            LanguageProfile.TextChangeProviderProfile);
+        var opts = new LanguageCompilerOptions(Versions: versions);
+        var one = LanguageCompiler.Compile("read a --start-line 2 --line-count 3", Workspace, opts);
+        var two = LanguageCompiler.Compile("read a --start-line 2 --line-count 4", Workspace, opts);
+        var context = LanguageCompiler.Compile("search needle --context-lines 2", Workspace, opts);
+        var defaultContext = LanguageCompiler.Compile("search needle", Workspace, opts);
+        var v1Context = LanguageCompiler.Compile("search needle --context-lines 2", Workspace);
+        var unpaired = LanguageCompiler.Compile("read a --start-line 2", Workspace, opts);
+        var tooMuchContext = LanguageCompiler.Compile("search needle --context-lines 21", Workspace, opts);
+        Assert.True(one.Succeeded, string.Join("; ", one.Diagnostics.Select(d => d.Code)));
+        Assert.True(context.Succeeded, string.Join("; ", context.Diagnostics.Select(d => d.Code)));
+        Assert.True(defaultContext.Succeeded);
+        Assert.NotEqual(one.Document!.Identity, two.Document!.Identity);
+        Assert.Equal(LanguageValueKind.FileWindow, one.Document.Statements[0][0].Output);
+        Assert.Equal(LanguageValueKind.SearchContextMatch, context.Document!.Statements[0][0].Output);
+        Assert.Equal(LanguageValueKind.SearchContextMatch, defaultContext.Document!.Statements[0][0].Output);
+        Assert.False(v1Context.Succeeded);
+        Assert.False(unpaired.Succeeded);
+        Assert.False(tooMuchContext.Succeeded);
+    }
+
+    [Fact]
+    public void V1_stage_constructor_and_deconstruction_shapes_remain_available()
+    {
+        var readCtor = typeof(ReadStage).GetConstructor(new[] { typeof(string), typeof(int) });
+        var searchCtor = typeof(SearchStage).GetConstructor(new[] { typeof(string), typeof(string), typeof(string), typeof(string), typeof(SearchLimits) });
+        Assert.NotNull(readCtor);
+        Assert.NotNull(searchCtor);
+        var read = new ReadStage("a", 12);
+        read.Deconstruct(out var path, out var maxBytes);
+        Assert.Equal("a", path);
+        Assert.Equal(12, maxBytes);
+        var search = new SearchStage("q", "", "**", null, new SearchLimits());
+        search.Deconstruct(out var query, out _, out _, out _, out var limits);
+        Assert.Equal("q", query);
+        Assert.NotNull(limits);
+    }
+
     [Theory]
     [InlineData("read file; count")]
     [InlineData("read file && count")]

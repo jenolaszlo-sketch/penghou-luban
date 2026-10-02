@@ -359,7 +359,7 @@ public sealed class PreviewRuntimeTests
         PreviewCompiler.Compile(stages, workspace.Id, limits);
 
     private static PreviewRuntime Runtime(TestWorkspace workspace, RecordingAuthority authority) =>
-        new(new WorkspaceReference(workspace.Id.Value, workspace.Root), authority);
+        new(new WorkspaceReference(workspace.Id.Value), TestLocalProvider.Create(workspace.Id.Value, workspace.Root), authority);
 
     private static EffectInvocation Invocation(string attempt = "attempt") => new("subject", "effect", attempt);
 

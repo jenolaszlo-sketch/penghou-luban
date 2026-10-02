@@ -19,7 +19,7 @@ var compilation = LanguageCompiler.Compile(
 if (!compilation.Succeeded)
     return; // Surface compilation.Diagnostics to the caller.
 
-var runtime = new LanguageRuntime(hostWorkspace, hostAuthority);
+var runtime = new LanguageRuntime(hostWorkspace, hostProvider, hostAuthority);
 var readiness = await runtime.PreflightAsync(invocation, compilation.Document!);
 var result = await runtime.ExecuteAsync(invocation, compilation.Document!);
 ```
@@ -161,3 +161,28 @@ See [canonical IR](semantic-ir.md), [integration build](shared-io-integration.md
 and the [implementation plan](implementation-plan.md). Behavioral and golden
 identity tests run with `dotnet test Penghou.Luban.sln -c Release` on both targets.
 
+
+## Separately qualified v2 extension — 2026-10-03
+
+The v1 command/result/identity contract above remains the default. Hosts can
+select language/IR `2`, catalogue `windows-text-change-v2` and provider profile
+`local-windows-read-v1`. A matching `#!luban2` header is optional; source cannot
+select this profile independently of the host.
+
+V2 adds literal-path `diff` and three-way `merge`, bounded `read --start-line n
+--line-count n`, and search results with absolute UTF-8 match spans and optional
+`--context-lines 0..20`. All effects retain whole-document preflight, concrete
+input/resource checks and protected-result release. File-change requests bind
+all roles/options and provider observations. A clean merge returns edits against
+ours. Conflicts remain structured protected observations.
+
+Whole-document resource, read, intermediate, output and value bounds include
+these operations. Diff/merge reserves a conservative aggregate input budget;
+repeated stages cannot bypass it. Range reads still require a complete bounded
+UTF-8 input. V2 search has a span-bearing result even when context is zero, while
+v1 preserves its original SearchMatch JSON shape.
+
+Execution remains read-only. Applying candidates is a separate host operation
+through the [capture bridge](file-change-application-profile.md). See the
+[manual](language-manual.md) for syntax and the [completion ledger](leaf-completion.md)
+for current evidence.

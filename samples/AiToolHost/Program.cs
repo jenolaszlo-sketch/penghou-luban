@@ -1,4 +1,5 @@
 using Penghou.IO.Abstractions;
+using Penghou.IO.Local;
 using Penghou.Luban;
 using Penghou.Luban.Language;
 
@@ -11,9 +12,10 @@ if (args.Length is < 1 or > 2)
 // Host setup chooses the root, caller identity, policy and limits. Only source
 // would come from an AI tool call. Replace these fixed demo identities with
 // authenticated invocation context in an application.
-var workspace = new WorkspaceReference("demo-workspace", args[0]);
+var workspace = new WorkspaceReference("demo-workspace");
+var provider = new LocalWorkspaceProvider(new WorkspaceId(workspace.Id), args[0]);
 var invocation = new EffectInvocation("demo-agent", "demo-read-tool", Guid.NewGuid().ToString("N"));
-var tool = new LanguageToolRuntime(workspace, new SourceReadPolicy(),
+var tool = new LanguageToolRuntime(workspace, provider, new SourceReadPolicy(),
     new(ExecutionLimits: new(MaxReadBytes: 4 * 1024 * 1024, MaxOutputBytes: 256 * 1024, MaxValues: 1000)));
 
 if (args.Length == 2 && args[1] == "--describe")

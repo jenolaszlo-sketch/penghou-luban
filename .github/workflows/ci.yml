@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/checkout@v4
+        with:
+          repository: jenolaszlo-sketch/penghou
+          ref: 89858631e4f9220bf40506cff34bb9b6ee8912dd
+          path: .candidate/Penghou
+          persist-credentials: false
+      - name: Build isolated IO candidate feed
+        shell: pwsh
+        run: ./eng/scripts/prepare-io-candidate.ps1 -RepositoryPath .candidate/Penghou -FeedPath $env:RUNNER_TEMP/luban-io-feed
+      - name: Restore using candidate feed and NuGet.org
+        shell: pwsh
+        run: dotnet restore Penghou.Luban.sln --source "$env:RUNNER_TEMP/luban-io-feed" --source https://api.nuget.org/v3/index.json -p:RestorePackagesPath="$env:RUNNER_TEMP/luban-nuget-cache" -p:UsePenghouSource=false
+      - name: Test .NET 8
+        run: dotnet test Penghou.Luban.sln -c Release -f net8.0 --no-restore
+      - name: Test .NET 10
+        run: dotnet test Penghou.Luban.sln -c Release -f net10.0 --no-restore
+      - name: Restore package-backed host sample
+        shell: pwsh
+        run: dotnet restore samples/AiToolHost/AiToolHost.csproj --source "$env:RUNNER_TEMP/luban-io-feed" --source https://api.nuget.org/v3/index.json -p:RestorePackagesPath="$env:RUNNER_TEMP/luban-nuget-cache" -p:UsePenghouSource=false
+      - name: Build package-backed host sample on .NET 8
+        run: dotnet build samples/AiToolHost/AiToolHost.csproj -c Release -f net8.0 --no-restore
+      - name: Build package-backed host sample on .NET 10
+        run: dotnet build samples/AiToolHost/AiToolHost.csproj -c Release -f net10.0 --no-restore
+      - name: Pack Luban
+        shell: pwsh
+        run: dotnet pack src/Penghou.Luban/Penghou.Luban.csproj -c Release --no-restore -o artifacts/package -p:PackageVersion=0.1.0-preview.1 -p:UsePenghouSource=false
+      - name: Verify package and isolated consumer
+        shell: pwsh
+        run: |
+          ./eng/scripts/verify-luban-package.ps1 -PackageDirectory artifacts/package -Version 0.1.0-preview.1
+          ./eng/scripts/smoke-package-consumer.ps1 -PackageDirectory artifacts/package -IoFeedPath "$env:RUNNER_TEMP/luban-io-feed" -Version 0.1.0-preview.1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: penghou-luban-preview-packages
+          path: artifacts/package/*
+          if-no-files-found: error
+
+  linux-neutral-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/checkout@v4
+        with:
+          repository: jenolaszlo-sketch/penghou
+          ref: 89858631e4f9220bf40506cff34bb9b6ee8912dd
+          path: .candidate/Penghou
+          persist-credentials: false
+      - name: Build isolated IO candidate feed
+        shell: pwsh
+        run: ./eng/scripts/prepare-io-candidate.ps1 -RepositoryPath .candidate/Penghou -FeedPath "$env:RUNNER_TEMP/luban-io-feed"
+      - name: Restore core package dependencies
+        run: dotnet restore src/Penghou.Luban/Penghou.Luban.csproj --source "$RUNNER_TEMP/luban-io-feed" --source https://api.nuget.org/v3/index.json -p:RestorePackagesPath="$RUNNER_TEMP/luban-nuget-cache" -p:UsePenghouSource=false
+      - name: Build provider-neutral core
+        run: dotnet build src/Penghou.Luban/Penghou.Luban.csproj -c Release --no-restore

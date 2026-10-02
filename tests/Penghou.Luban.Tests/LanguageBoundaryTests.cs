@@ -24,7 +24,7 @@ public sealed class LanguageBoundaryTests
         using var workspace = new Workspace();
         var compilation = LanguageCompiler.Compile("find . *.txt | count", new("workspace"));
         Assert.True(compilation.Succeeded);
-        var runtime = new LanguageRuntime(new("workspace", workspace.Root), new DenyDirectoryRelease());
+        var runtime = new LanguageRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), new DenyDirectoryRelease());
         var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), compilation.Document!);
         Assert.Equal(LanguageRunStatus.AuthorityDenied, result.Status);
         Assert.Null(result.Statements);
@@ -48,7 +48,7 @@ public sealed class LanguageBoundaryTests
         File.WriteAllText(Path.Combine(workspace.Root, "a"), "unrelated content");
         var compilation = LanguageCompiler.Compile("search needle . | count", new("workspace"));
         Assert.True(compilation.Succeeded);
-        var runtime = new LanguageRuntime(new("workspace", workspace.Root), new DenyContentRelease());
+        var runtime = new LanguageRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), new DenyContentRelease());
         var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), compilation.Document!);
         Assert.Equal(LanguageRunStatus.AuthorityDenied, result.Status);
         Assert.Null(result.Statements);
@@ -86,7 +86,7 @@ public sealed class LanguageBoundaryTests
         var authority = new AllowAuthority();
         var compilation = LanguageCompiler.Compile("read a", new("workspace"), new(ExecutionLimits: new(MaxResourceCalls: 3)));
         Assert.True(compilation.Succeeded);
-        var runtime = new LanguageRuntime(new("workspace", workspace.Root), authority);
+        var runtime = new LanguageRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), authority);
         var result = await runtime.ExecuteAsync(new("subject", "effect", "attempt"), compilation.Document!);
         Assert.Equal(LanguageRunStatus.LimitExceeded, result.Status);
         Assert.Contains(authority.Requests, r => r.Phase == LanguageAuthorizationPhase.ResourceAccess);
@@ -97,7 +97,7 @@ public sealed class LanguageBoundaryTests
     {
         var compilation = LanguageCompiler.Compile(source, new("workspace"), new(ExecutionLimits: limits));
         Assert.True(compilation.Succeeded, string.Join(",", compilation.Diagnostics.Select(d => d.Code)));
-        var runtime = new LanguageRuntime(new("workspace", workspace.Root), new AllowAuthority());
+        var runtime = new LanguageRuntime(new("workspace"), TestLocalProvider.Create("workspace", workspace.Root), new AllowAuthority());
         return await runtime.ExecuteAsync(new("subject", "effect", "attempt"), compilation.Document!);
     }
 

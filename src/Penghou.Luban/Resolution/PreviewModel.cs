@@ -8,7 +8,7 @@ namespace Penghou.Luban.Resolution;
 public static class PreviewProfile
 {
     public const string SchemaVersion = "1";
-    public const string CatalogueVersion = "windows-patch-capture-v1";
+    public const string CatalogueVersion = "windows-patch-capture-v2";
     public const string ProviderProfile = LanguageProfile.ProviderProfile;
 }
 
@@ -86,7 +86,7 @@ public sealed record PreviewObservation(string NodeIdentity, string RelativePath
     RequestIdentity RequestIdentity, ResourceVersion? Version, string Digest, int ByteLength, bool IsComplete);
 public sealed record CapturedFilePatch(string RelativePath, ResourceVersion OriginalVersion,
     string OriginalSha256, int OriginalByteLength, string ProposedSha256, int ProposedByteLength,
-    IReadOnlyList<FrozenTextPatch> Patches);
+    IReadOnlyList<FrozenTextPatch> Patches, ImmutableBytes OriginalContent, ImmutableBytes ProposedContent);
 public sealed record ResolvedPreviewNode(string NodeIdentity, string Descriptor, PreviewNodeState State,
     PreviewSelection Selection, IReadOnlyList<CapturedFilePatch> Proposals,
     IReadOnlyList<string> Dependencies, PreviewUnresolvedReason? UnresolvedReason);

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Penghou.IO.Abstractions;
-using Penghou.IO.Local;
+using Penghou.Luban.Changes;
 using Penghou.Luban.Language;
 
 namespace Penghou.Luban.Resolution;
@@ -11,12 +11,15 @@ public sealed class PreviewRuntime
 {
     private readonly WorkspaceReference _workspace;
     private readonly IPreviewAuthorizer _authorizer;
+    private readonly IWorkspaceProvider _provider;
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
-    public PreviewRuntime(WorkspaceReference workspace, IPreviewAuthorizer authorizer)
+    public PreviewRuntime(WorkspaceReference workspace, IWorkspaceProvider provider, IPreviewAuthorizer authorizer)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         _authorizer = authorizer ?? throw new ArgumentNullException(nameof(authorizer));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        if (_provider.Workspace.Value != workspace.Id) throw new ArgumentException("Provider workspace does not match the logical workspace.", nameof(provider));
         if (!ValidId(workspace.Id)) throw new ArgumentException("A bounded workspace ID is required.", nameof(workspace));
     }
 
@@ -39,7 +42,7 @@ public sealed class PreviewRuntime
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!Validate(invocation, document)) return new(PreviewRunStatus.InvalidDocument);
-        if (!OperatingSystem.IsWindows()) return new(PreviewRunStatus.UnsupportedProfile);
+        if (!_provider.Capabilities.SupportsReads) return new(PreviewRunStatus.UnsupportedProfile);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(document.Limits.TimeoutMilliseconds);
         var ct = deadline.Token;
@@ -111,11 +114,12 @@ public sealed class PreviewRuntime
                     var patches = Patches(node.Operation);
                     if (node.Operation is ExactPatchOperation { ExpectedVersion: { } expected } && expected != data.Version)
                         throw new Failure(PreviewRunStatus.StaleObservation);
-                    var proposedBytes = Apply(data.Bytes, patches, document.Limits.MaxFileBytes, ct);
+                    var proposedBytes = Apply(data.Bytes, patches, document.Limits, ct);
                     var originalHash = Convert.ToHexString(SHA256.HashData(data.Bytes));
                     var proposal = new CapturedFilePatch(path, data.Version, originalHash, data.Bytes.Length,
-                        Convert.ToHexString(SHA256.HashData(proposedBytes)), proposedBytes.Length, patches);
-                    budget.Retain(512 + Encoding.UTF8.GetByteCount(path) + patches.Sum(p => 16 + p.ReplacementUtf8.Length));
+                        Convert.ToHexString(SHA256.HashData(proposedBytes)), proposedBytes.Length, patches,
+                        new ImmutableBytes(data.Bytes), new ImmutableBytes(proposedBytes));
+                    budget.Retain(512 + Encoding.UTF8.GetByteCount(path) + data.Bytes.Length + proposedBytes.Length + patches.Sum(p => 16 + p.ReplacementUtf8.Length));
                     observations.Add(new(node.Identity, path, ResourceAction.ReadFile, data.Identity,
                         data.Version, originalHash, data.Bytes.Length, true));
                     budget.Retain(256 + Encoding.UTF8.GetByteCount(path));
@@ -288,35 +292,16 @@ public sealed class PreviewRuntime
         return (paths, complete);
     }
 
-    internal static byte[] Apply(byte[] original, IReadOnlyList<FrozenTextPatch> patches, int maximum, CancellationToken ct)
+    internal static byte[] Apply(byte[] original, IReadOnlyList<FrozenTextPatch> patches, PreviewLimits limits, CancellationToken ct)
     {
-        try { _ = Utf8.GetCharCount(original); }
-        catch (DecoderFallbackException) { throw new Failure(PreviewRunStatus.InvalidPatch); }
-        long size = original.Length;
-        foreach (var patch in patches)
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            var end = (long)patch.StartOffset + patch.DeleteLength;
-            if (patch.StartOffset < 0 || end > original.Length || !Boundary(original, patch.StartOffset) || !Boundary(original, (int)end))
-                throw new Failure(PreviewRunStatus.InvalidPatch);
-            size += patch.ReplacementUtf8.Length - (long)patch.DeleteLength;
+            var edits = patches.Select(p => new TextPatch(p.StartOffset, p.DeleteLength, p.ReplacementUtf8.ToArray())).ToArray();
+            return Utf8PatchMaterializer.Materialize(original, edits,
+                new PatchLimits(limits.MaxPatchCount, limits.MaxReplacementBytes, limits.MaxFileBytes), ct);
         }
-        if (size < 0 || size > maximum) throw new Failure(PreviewRunStatus.LimitExceeded);
-        var output = new byte[(int)size];
-        var from = 0; var to = 0;
-        foreach (var patch in patches)
-        {
-            ct.ThrowIfCancellationRequested();
-            original.AsSpan(from, patch.StartOffset - from).CopyTo(output.AsSpan(to));
-            to += patch.StartOffset - from;
-            patch.ReplacementUtf8.Span.CopyTo(output.AsSpan(to));
-            to += patch.ReplacementUtf8.Length;
-            from = patch.StartOffset + patch.DeleteLength;
-        }
-        original.AsSpan(from).CopyTo(output.AsSpan(to));
-        return output;
+        catch (InvalidDataException) { throw new Failure(PreviewRunStatus.InvalidPatch); }
     }
-    private static bool Boundary(byte[] bytes, int offset) => offset == bytes.Length || offset >= 0 && (bytes[offset] & 0xC0) != 0x80;
     private static PreviewRunStatus Map(ResourceFailureKind? failure) => failure switch
     {
         ResourceFailureKind.AuthorizationDenied => PreviewRunStatus.AuthorityDenied,
@@ -357,14 +342,13 @@ public sealed class PreviewRuntime
             _runtime = runtime; _parent = parent; Document = document; Node = node; Budget = budget;
             _retain = retain;
             Invocation = new(Guid.NewGuid().ToString("N"), parent.SubjectId, parent.EffectId, parent.AttemptId, Guid.NewGuid().ToString("N"), null, default);
-            Reader = new(document.Workspace, runtime._workspace.FullRootPath, this, new()
-            { MaxEntries = 100_000, MaxCandidatesScanned = 100_000, MaxTotalCandidatesScanned = candidates, OperationTimeout = TimeSpan.FromMilliseconds(document.Limits.TimeoutMilliseconds) });
+            Reader = runtime._provider.OpenReader(this, new(MaxEntries: 100_000, MaxCandidatesScanned: 100_000, MaxTotalCandidatesScanned: candidates));
         }
         internal CompiledPreviewDocument Document { get; }
         internal CompiledPreviewNode Node { get; }
         internal Budget Budget { get; }
         internal HostInvocation Invocation { get; }
-        internal LocalWorkspaceReader Reader { get; }
+        internal IWorkspaceReaderSession Reader { get; }
         internal void Register(RequestIdentity identity, ResourceAction action, string path) { _identity = identity; _action = action; _path = path; }
         public async ValueTask<ResourceAuthorizationDecision> AuthorizeAsync(ResourceAuthorizationRequest request, CancellationToken ct = default)
         {

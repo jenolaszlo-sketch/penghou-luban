@@ -6,10 +6,11 @@ WhatIf. `ResolvedEffectPlan.CanCommit` stays false; no preview callback dispatch
 the executor.
 
 Trusted composition must explicitly select `LocalPatchNamespace.HostControlled`
-in the executor constructor. The default/unknown provider namespace and an
-unspecified executor namespace return Unsupported before protected I/O or host
+in the host's `LocalWorkspaceProvider` configuration. Executors take only
+neutral provider capabilities. The default/unknown Local namespace returns
+Unsupported before protected I/O or host
 admission. The admission request binds this selection and the writer profile
-`local-windows-ntfs-controlled-patch-v1`. This is a host environment assurance,
+`local-windows-ntfs-controlled-write-v1`. This is a host environment assurance,
 not authority a source command can request. Untrusted actors must not be able
 to create aliases or change root/mount/reparse/case configuration during the
 operation. A native test demonstrated that CreateHardLink can succeed despite
@@ -22,14 +23,18 @@ It rejects incomplete, selected-glob, multi-target and deferred-tool plans. It
 recomputes document/node/plan identities and checks the exact compiled path,
 patch offsets/replacement bytes, dependency order, original version/hash/length,
 and read observation against the proposal. An unkeyed plan hash alone is not
-admission. Proposed bytes are recomputed by the writer and the proposed hash and
-length must match the capture before start.
+admission. Capture retains bounded immutable original and proposed bytes.
+The executor recomputes the exact edits with Luban's pure materializer and
+verifies original/proposed hashes and lengths before admission. It issues a
+frozen `FileWriteRequest` with the opaque captured version as `MustMatchVersion`.
+Local persists bytes without interpreting text edits.
 
 The constructor requires a trusted `IPatchExecutionHost`. No default permit or
 test journal ships. Whole-plan `AdmitAsync` runs before provider access. Every
 provider resource request carries the exact admission, invocation, scope and
 concrete request identity. The private bridge accepts only the exact file's
-ReadFile/PatchFile actions and metadata for its qualified ancestry. A read,
+ReadFile/WriteFile actions and metadata for its qualified ancestry, and requires
+separate semantic PatchFile approval for each concrete write. A read,
 FileRef, capture success or operation ID confers no authority.
 
 The writer prepares one locked object, verifies the exact original content

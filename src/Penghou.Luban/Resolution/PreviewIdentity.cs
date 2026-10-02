@@ -83,6 +83,36 @@ internal static class PreviewIdentity
         return w.Length;
     }
 
+    /// <summary>Measures the serialized plan together with the original and proposed bytes retained by its captures.</summary>
+    internal static long RetainedPlanSize(EffectInvocation invocation, CompiledPreviewDocument document,
+        IReadOnlyList<PreviewObservation> observations, IReadOnlyList<ResolvedPreviewNode> nodes)
+    {
+        var maximum = (long)document.Limits.MaxPlanBytes;
+        var exceeded = maximum + 1;
+        var size = PlanSize(invocation, document, observations, nodes);
+        if (size > maximum) return exceeded;
+
+        var nodeCount = nodes.Count;
+        if (nodeCount > document.Limits.MaxNodes || nodeCount > 64) return exceeded;
+        for (var i = 0; i < nodeCount; i++)
+        {
+            var proposals = nodes[i]?.Proposals;
+            if (proposals is null || proposals.Count > 1) return exceeded;
+            for (var j = 0; j < proposals.Count; j++)
+            {
+                var proposal = proposals[j];
+                if (proposal?.OriginalContent is null || proposal.ProposedContent is null) return exceeded;
+                var originalLength = (long)proposal.OriginalContent.Length;
+                var proposedLength = (long)proposal.ProposedContent.Length;
+                if (originalLength > maximum - size) return exceeded;
+                size += originalLength;
+                if (proposedLength > maximum - size) return exceeded;
+                size += proposedLength;
+            }
+        }
+        return size;
+    }
+
     private static void WritePlan(ICanonicalSink w, EffectInvocation invocation, CompiledPreviewDocument document,
         IReadOnlyList<PreviewObservation> observations, IReadOnlyList<ResolvedPreviewNode> nodes, int observationCount, int nodeCount)
     {

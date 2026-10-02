@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Penghou.IO.Abstractions;
-using Penghou.IO.Local;
+using Penghou.Luban.Changes;
 
 namespace Penghou.Luban.Language;
 
@@ -10,12 +10,15 @@ public sealed class LanguageRuntime
 {
     private readonly WorkspaceReference _workspace;
     private readonly ILanguageAuthorizer _authorizer;
+    private readonly IWorkspaceProvider _provider;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
-    public LanguageRuntime(WorkspaceReference workspace, ILanguageAuthorizer authorizer)
+    public LanguageRuntime(WorkspaceReference workspace, IWorkspaceProvider provider, ILanguageAuthorizer authorizer)
     {
         _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         _authorizer = authorizer ?? throw new ArgumentNullException(nameof(authorizer));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        if (_provider.Workspace.Value != workspace.Id) throw new ArgumentException("Provider workspace does not match the logical workspace.", nameof(provider));
         if (!ValidId(workspace.Id)) throw new ArgumentException("A bounded workspace ID is required.", nameof(workspace));
     }
 
@@ -34,7 +37,7 @@ public sealed class LanguageRuntime
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!Validate(invocation, document)) return new(LanguageRunStatus.InvalidDocument, Diagnostic: Diagnostic(LanguageRunStatus.InvalidDocument));
-        if (!OperatingSystem.IsWindows()) return new(LanguageRunStatus.UnsupportedProfile, Diagnostic: Diagnostic(LanguageRunStatus.UnsupportedProfile));
+        if (!_provider.Capabilities.SupportsReads) return new(LanguageRunStatus.UnsupportedProfile, Diagnostic: Diagnostic(LanguageRunStatus.UnsupportedProfile));
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(document.Limits.TimeoutMilliseconds);
         var ct = deadline.Token;
@@ -78,7 +81,9 @@ public sealed class LanguageRuntime
                                 string text;
                                 try { text = StrictUtf8.GetString(data.Bytes); }
                                 catch (DecoderFallbackException) { throw new Failure(LanguageRunStatus.InvalidDocument); }
-                                var value = new FileContentValue(file, text, data.Bytes.Length, Convert.ToHexString(SHA256.HashData(data.Bytes)));
+                                LanguageValue value = read.StartLine.HasValue
+                                    ? TextWindows.ReadWindow(file, text, data.Bytes, read.StartLine.Value, read.LineCount!.Value, ct)
+                                    : new FileContentValue(file, text, data.Bytes.Length, Convert.ToHexString(SHA256.HashData(data.Bytes)));
                                 bufferBytes = checked(bufferBytes + Cost(value));
                                 budget.Buffer(output.Count + 1, bufferBytes);
                                 output.Add(value);
@@ -147,6 +152,22 @@ public sealed class LanguageRuntime
                                 string text;
                                 try { text = StrictUtf8.GetString(data.Bytes); }
                                 catch (DecoderFallbackException) { continue; }
+                                if (search.ContextLines > 0 || IsTextChangeProfile(document.Versions))
+                                {
+                                    var contextual = TextWindows.Search(file.Path, text, data.Bytes, search.Query,
+                                        search.ContextLines, search.Limits.MaxMatches - output.Count,
+                                        search.Limits.MaxOutputBytes - bytes, ct, out var contextTruncated, out var contextReasons);
+                                    foreach (var value in contextual)
+                                    {
+                                        var cost = Cost(value);
+                                        budget.Buffer(output.Count + 1, checked(bytes + cost));
+                                        output.Add(value);
+                                        bytes += cost;
+                                    }
+                                    if (contextTruncated) { truncated = true; coverage |= contextReasons; }
+                                    if (contextTruncated || output.Count >= search.Limits.MaxMatches || bytes >= search.Limits.MaxOutputBytes) break;
+                                    continue;
+                                }
                                 // Streaming line extraction avoids allocating one string for every nonmatching line.
                                 var start = 0;
                                 var number = 0;
@@ -184,6 +205,51 @@ public sealed class LanguageRuntime
                                 }
                             }
                             values = output;
+                            break;
+                        }
+                        case DiffStage diff:
+                        {
+                            var limits = ChangeLimits(document, diff.Options!, 2, budget);
+                            var adapter = new LanguageFileChangeAuthorizer(this, invocation, document, node,
+                                budget, (path, action, identity) => AddRelease(new(node, path, action, identity)));
+                            var changeRuntime = new FileChangeRuntime(_workspace, _provider, adapter);
+                            var outcome = await changeRuntime.DiffAsync(invocation, document.Workspace,
+                                new FileDiffRequest(diff.BeforePath, diff.AfterPath, diff.Options), limits, ct).ConfigureAwait(false);
+                            if (adapter.LimitExceeded) throw new Failure(LanguageRunStatus.LimitExceeded, nameof(LanguageExecutionLimits.MaxResourceCalls));
+                            ct.ThrowIfCancellationRequested();
+                            if (outcome.Status != FileChangeStatus.Succeeded || outcome.Diff is null)
+                                throw new Failure(MapChange(outcome.Status));
+                            var before = outcome.Diff.Before!; var after = outcome.Diff.After!;
+                            values = [new DiffValue(diff.BeforePath, diff.AfterPath, outcome.Diff.ProfileIdentity,
+                                before.Sha256, before.ByteLength, after.Sha256, after.ByteLength, outcome.Diff.Edits)];
+                            break;
+                        }
+                        case MergeStage merge:
+                        {
+                            var limits = ChangeLimits(document, merge.Options!, 3, budget);
+                            var adapter = new LanguageFileChangeAuthorizer(this, invocation, document, node,
+                                budget, (path, action, identity) => AddRelease(new(node, path, action, identity)));
+                            var changeRuntime = new FileChangeRuntime(_workspace, _provider, adapter);
+                            var outcome = await changeRuntime.MergeAsync(invocation, document.Workspace,
+                                new FileMergeRequest(merge.BasePath, merge.OursPath, merge.TheirsPath, merge.Options), limits, ct).ConfigureAwait(false);
+                            if (adapter.LimitExceeded) throw new Failure(LanguageRunStatus.LimitExceeded, nameof(LanguageExecutionLimits.MaxResourceCalls));
+                            ct.ThrowIfCancellationRequested();
+                            if (outcome.Status == FileChangeStatus.Conflicted && outcome.Merge is { } conflicted)
+                            {
+                                values = [new MergeConflictValue(merge.BasePath, merge.OursPath, merge.TheirsPath,
+                                    conflicted.ProfileIdentity, conflicted.Conflicts)];
+                                break;
+                            }
+                            if (outcome.Status != FileChangeStatus.Succeeded || outcome.Merge is not { Value: { } text } clean)
+                                throw new Failure(MapChange(outcome.Status));
+                            var baseSnapshot = clean.Base!; var oursSnapshot = clean.Ours!; var theirsSnapshot = clean.Theirs!; var resultSnapshot = clean.Result!;
+                            if (outcome.Candidates.Count != 1) throw new Failure(LanguageRunStatus.InvalidDocument);
+                            var targetEdits = outcome.Candidates[0].Edits.Select(e => new TextEdit(e.StartOffset,
+                                e.DeleteLength, StrictUtf8.GetString(e.ReplacementUtf8.ToArray()))).ToArray();
+                            values = [new MergeValue(merge.BasePath, merge.OursPath, merge.TheirsPath, merge.OursPath, clean.ProfileIdentity,
+                                baseSnapshot.Sha256, baseSnapshot.ByteLength, oursSnapshot.Sha256, oursSnapshot.ByteLength,
+                                theirsSnapshot.Sha256, theirsSnapshot.ByteLength, resultSnapshot.Sha256, resultSnapshot.ByteLength,
+                                text, Array.AsReadOnly(targetEdits))];
                             break;
                         }
                         case TakeStage take:
@@ -248,7 +314,10 @@ public sealed class LanguageRuntime
         try { return StrictUtf8.GetByteCount(value) <= 1024; }
         catch (EncoderFallbackException) { return false; }
     }
-    private static bool IsEffect(LanguageStage stage) => stage is ReadStage or FindStage or SearchStage;
+    private static bool IsEffect(LanguageStage stage) => stage is ReadStage or FindStage or SearchStage or DiffStage or MergeStage;
+    private static bool IsTextChangeProfile(LanguageVersions versions) => versions == new LanguageVersions(
+        LanguageProfile.TextChangeLanguageVersion, LanguageProfile.TextChangeIrVersion,
+        LanguageProfile.TextChangeCatalogueVersion, LanguageProfile.TextChangeProviderProfile);
     private static bool HasDynamic(CompiledDocument doc) => doc.Statements.SelectMany(s => s).Any(n => n.Stage is FindStage or SearchStage or ReadStage { Path: null });
     private static string? Selector(LanguageStage stage) => stage switch { ReadStage r => r.Path, FindStage f => f.Root, SearchStage s => s.Root, _ => null };
     private static LanguageAuthorizationRequest Request(EffectInvocation i, CompiledDocument d, CompiledNode n, LanguageAuthorizationPhase phase,
@@ -366,9 +435,42 @@ public sealed class LanguageRuntime
     {
         FileReferenceValue r => Encoding.UTF8.GetByteCount(r.RelativePath) + 32,
         FileContentValue c => checked(Encoding.UTF8.GetByteCount(c.RelativePath) + Encoding.UTF8.GetByteCount(c.Content) + 128),
+        FileWindowValue w => checked(Encoding.UTF8.GetByteCount(w.RelativePath) + Encoding.UTF8.GetByteCount(w.Content) + 160),
         SearchMatchValue m => checked(Encoding.UTF8.GetByteCount(m.RelativePath) + Encoding.UTF8.GetByteCount(m.Line) + 32),
+        SearchContextMatchValue m => checked(Encoding.UTF8.GetByteCount(m.RelativePath) + Encoding.UTF8.GetByteCount(m.Line) +
+            m.BeforeContext.Sum(Encoding.UTF8.GetByteCount) + m.AfterContext.Sum(Encoding.UTF8.GetByteCount) + 160),
+        DiffValue d => checked(Encoding.UTF8.GetByteCount(d.BeforePath) + Encoding.UTF8.GetByteCount(d.AfterPath) +
+            d.Edits.Sum(e => Encoding.UTF8.GetByteCount(e.Replacement) + 32) + 160),
+        MergeValue m => checked(Encoding.UTF8.GetByteCount(m.BasePath) + Encoding.UTF8.GetByteCount(m.OursPath) +
+            Encoding.UTF8.GetByteCount(m.TheirsPath) + Encoding.UTF8.GetByteCount(m.TargetPath) + Encoding.UTF8.GetByteCount(m.ProposedText) +
+            m.Edits.Sum(e => Encoding.UTF8.GetByteCount(e.Replacement) + 32) + 192),
+        MergeConflictValue m => checked(Encoding.UTF8.GetByteCount(m.BasePath) + Encoding.UTF8.GetByteCount(m.OursPath) +
+            Encoding.UTF8.GetByteCount(m.TheirsPath) + m.Conflicts.Sum(c => Encoding.UTF8.GetByteCount(c.BaseText) +
+                Encoding.UTF8.GetByteCount(c.OursText) + Encoding.UTF8.GetByteCount(c.TheirsText) + 48) + 128),
         CountValue => 16,
         _ => throw new Failure(LanguageRunStatus.InvalidDocument)
+    };
+
+    private static FileChangeLimits ChangeLimits(CompiledDocument document, TextChangeOptions options, int fileCount, Budget budget)
+    {
+        var aggregate = Math.Min(budget.RemainingReadBytes, checked(options.MaxInputBytes * fileCount));
+        aggregate = Math.Clamp(aggregate, 1, FileChangeLimits.Default.MaxTotalReadBytes);
+        budget.ReserveReadBytes(aggregate);
+        return new FileChangeLimits(fileCount, aggregate, document.Limits.TimeoutMilliseconds);
+    }
+
+    private static LanguageRunStatus MapChange(FileChangeStatus status) => status switch
+    {
+        FileChangeStatus.AuthorizationDenied => LanguageRunStatus.AuthorityDenied,
+        FileChangeStatus.AuthorizationUnavailable => LanguageRunStatus.AuthorizationUnavailable,
+        FileChangeStatus.UnsupportedProfile => LanguageRunStatus.UnsupportedProfile,
+        FileChangeStatus.LimitExceeded => LanguageRunStatus.LimitExceeded,
+        FileChangeStatus.Cancelled => LanguageRunStatus.Cancelled,
+        FileChangeStatus.NotFound => LanguageRunStatus.NotFound,
+        FileChangeStatus.AccessDenied => LanguageRunStatus.AccessDenied,
+        FileChangeStatus.ProviderFailure => LanguageRunStatus.ProviderFailure,
+        FileChangeStatus.InvalidInput or FileChangeStatus.Stale or FileChangeStatus.Valid => LanguageRunStatus.InvalidDocument,
+        _ => LanguageRunStatus.ProviderFailure
     };
     private static LanguageRunStatus Map(ResourceFailureKind? failure) => failure switch
     {
@@ -392,6 +494,58 @@ public sealed class LanguageRuntime
         internal string? LimitName { get; } = limitName;
         internal string? NodeIdentity { get; } = nodeIdentity;
     }
+
+    private sealed class LanguageFileChangeAuthorizer : IFileChangeAuthorizer
+    {
+        private readonly LanguageRuntime _runtime;
+        private readonly EffectInvocation _invocation;
+        private readonly CompiledDocument _document;
+        private readonly CompiledNode _node;
+        private readonly Budget _budget;
+        private readonly Action<string, ResourceAction, RequestIdentity> _retain;
+        internal bool LimitExceeded { get; private set; }
+
+        internal LanguageFileChangeAuthorizer(LanguageRuntime runtime, EffectInvocation invocation,
+            CompiledDocument document, CompiledNode node, Budget budget, Action<string, ResourceAction, RequestIdentity> retain)
+        { _runtime = runtime; _invocation = invocation; _document = document; _node = node; _budget = budget; _retain = retain; }
+
+        public async ValueTask<FileChangeAuthorizationDecision> AuthorizeAsync(
+            FileChangeAuthorizationRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request is null || request.Invocation != _invocation || request.Workspace != _document.Workspace)
+                return new(FileChangeAuthorizationStatus.Deny);
+            var phase = request.Phase switch
+            {
+                FileChangePhase.Preflight => LanguageAuthorizationPhase.Preflight,
+                FileChangePhase.TargetAdmission => LanguageAuthorizationPhase.ResourceAccess,
+                FileChangePhase.ResourceAccess => LanguageAuthorizationPhase.ResourceAccess,
+                FileChangePhase.ResultRelease => LanguageAuthorizationPhase.Release,
+                _ => (LanguageAuthorizationPhase?)null
+            };
+            if (phase is null) return new(FileChangeAuthorizationStatus.Deny);
+            try { _budget.Call(); }
+            catch (Failure failure) when (failure.Status == LanguageRunStatus.LimitExceeded)
+            { LimitExceeded = true; return new(FileChangeAuthorizationStatus.Unavailable); }
+            var path = request.Resource?.Path.Value;
+            var action = request.Action ?? (request.Phase == FileChangePhase.TargetAdmission ? ResourceAction.ReadFile : null);
+            var decision = await _runtime.Check(Request(_invocation, _document, _node, phase.Value,
+                path, action, request.RequestIdentity), cancellationToken).ConfigureAwait(false);
+            if (decision == LanguageAuthorityStatus.Permit && request.Phase == FileChangePhase.ResourceAccess &&
+                path is not null && action is { } permittedAction && request.RequestIdentity is { } identity)
+            {
+                try { _retain(path, permittedAction, identity); }
+                catch (Failure failure) when (failure.Status == LanguageRunStatus.LimitExceeded)
+                { LimitExceeded = true; return new(FileChangeAuthorizationStatus.Unavailable); }
+            }
+            return new(decision switch
+            {
+                LanguageAuthorityStatus.Permit => FileChangeAuthorizationStatus.Permit,
+                LanguageAuthorityStatus.Deny => FileChangeAuthorizationStatus.Deny,
+                _ => FileChangeAuthorizationStatus.Unavailable
+            });
+        }
+    }
+
     private sealed class Budget(LanguageExecutionLimits limits)
     {
         private int _calls;
@@ -410,6 +564,11 @@ public sealed class LanguageRuntime
         internal int RemainingReadBytes => limits.MaxReadBytes - _read;
         internal void Call() { if (++_calls > limits.MaxResourceCalls) { Exhausted = true; throw new Failure(LanguageRunStatus.LimitExceeded, nameof(LanguageExecutionLimits.MaxResourceCalls)); } }
         internal void Read(int bytes) { _read = checked(_read + bytes); if (_read > limits.MaxReadBytes) throw new Failure(LanguageRunStatus.LimitExceeded, nameof(LanguageExecutionLimits.MaxReadBytes)); }
+        internal void ReserveReadBytes(int bytes)
+        {
+            if (bytes <= 0 || bytes > RemainingReadBytes) throw new Failure(LanguageRunStatus.LimitExceeded, nameof(LanguageExecutionLimits.MaxReadBytes));
+            _read = checked(_read + bytes);
+        }
         internal void Buffer(IReadOnlyList<LanguageValue> values)
         {
             Buffer(values.Count, values.Sum(Cost));
@@ -453,16 +612,13 @@ public sealed class LanguageRuntime
         {
             _runtime = runtime; _parent = parent; _node = node; Document = document; Budget = budget; _retain = retain;
             Invocation = new(Guid.NewGuid().ToString("N"), parent.SubjectId, parent.EffectId, parent.AttemptId, Guid.NewGuid().ToString("N"), null, default);
-            Reader = new(document.Workspace, runtime._workspace.FullRootPath, this, new()
-            {
-                MaxEntries = 100_000, MaxCandidatesScanned = 100_000, MaxTotalCandidatesScanned = candidates,
-                OperationTimeout = TimeSpan.FromMilliseconds(document.Limits.TimeoutMilliseconds)
-            });
+            Reader = runtime._provider.OpenReader(this, new(MaxEntries: 100_000, MaxCandidatesScanned: 100_000,
+                MaxTotalCandidatesScanned: candidates));
         }
         internal CompiledDocument Document { get; }
         internal HostInvocation Invocation { get; }
         internal Budget Budget { get; }
-        internal LocalWorkspaceReader Reader { get; }
+        internal IWorkspaceReaderSession Reader { get; }
         internal void Register(RequestIdentity identity, ResourceAction action, string path) { _identity = identity; _action = action; _path = path; }
         public async ValueTask<ResourceAuthorizationDecision> AuthorizeAsync(ResourceAuthorizationRequest request, CancellationToken ct = default)
         {
@@ -499,5 +655,3 @@ public sealed class LanguageRuntime
         public void Dispose() => Reader.Dispose();
     }
 }
-
-

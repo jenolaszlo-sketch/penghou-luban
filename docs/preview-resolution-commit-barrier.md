@@ -80,10 +80,13 @@ No target read or metadata probe bypasses authorization because it is called
 preview. Root permission does not authorize descendants. References carry
 provenance, never permission. The final Release action checks plan identity, node
 identity, and protected observations; a denial returns no partial plan. The plan
-retains only the copied exact TextPatch byte payload with offsets and replacement
-text, not generated proposed full-file bytes. Original and proposed full-file
-bytes are not retained or exposed. File observations expose only SHA, length,
-and version. Diagnostics and plan rendering remain
+retains copied exact TextPatch payloads and bounded immutable original/proposed
+full-file bytes. Both retained buffers count against the plan budget and are
+protected content: hosts must apply release authorization, retention and cleanup
+policy to the in-memory plan, not just its rendered summary. The default JSON
+shape of ImmutableBytes exposes hash/length metadata; explicit `ToArray()`
+access returns a defensive byte copy. File observations expose SHA, length,
+and opaque version. Diagnostics and plan rendering remain
 release-protected; excluded names and content are not exposed.
 
 ## Resolved effect plan and identity

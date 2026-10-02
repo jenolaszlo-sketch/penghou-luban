@@ -21,15 +21,17 @@ does not retry uncertain/NoMutation entries. Hufu supplies a separate experiment
 co-located Zhinu start gate; complete governed mutation hosts, exact terminal
 recovery and general writers remain pending. See the [batch execution profile](batch-execution-profile.md).
 
-Pure text diff/merge is implemented and qualified under [ADR 0005](decisions/0005-deterministic-diff-merge.md); D3 transport/unified import and exact pure source validation are also implemented; authorized file/application and textual commands remain planned. The Windows Read/Find/literal SearchText runtime, required direct IEffectAuthorizer,
+The [completion ledger](leaf-completion.md) records the initial D1–D6 baseline and release evidence. The [consumer impact guide](consumer-impact.md) records dependencies and migrations. Pure text/transport, authorized file changes, the application bridge and opt-in v2 diff/merge commands are implemented. The Windows Read/Find/literal SearchText runtime, required direct IEffectAuthorizer,
 language parser/compiler, typed semantic IR, and static preflight are implemented.
 The minimal language supports read, find, literal search, take, and count. Its
 qualified `*`, `?`, and `**` path globs are separate from legacy recursive
-basename-pattern behavior. Only read effects and take/count transforms execute;
+basename-pattern behavior. V1 executes read effects and take/count; opt-in v2 also computes file diff/merge, line windows and search context/spans;
 textual mutation syntax, selected-glob execution, deferred tools, durable
 journaling and complete governed mutation adapters remain pending; the separate Hufu known-root read adapter is implemented. The [current read profile](read-language-profile.md)
 and [semantic IR profile](semantic-ir.md) describe the implemented versions.
 
+- [File-change profile](file-change-profile.md): exact authorized observations, candidates and read-only validation.
+- [File-change application](file-change-application-profile.md): capture bridge and separate execution.
 - [Review-fix qualification](review-fixes-2026-10-02.md): corrected boundaries and 227-test validation on both runtimes.
 - [Diff/merge specification](diff-merge-spec.md): reviewed feature, exact-state and authority boundaries.
 - [Text change profile](text-change-profile.md): initial pure diff/merge API, bounds and qualification.
@@ -51,5 +53,3 @@ the reviewed specifications and ADR amendments qualify them.
 
 The [preview/commit amendment](archive/preview-resolution-commit-barrier-proposal-2026-10-01.md)
 is also preserved verbatim as historical input.
-
-

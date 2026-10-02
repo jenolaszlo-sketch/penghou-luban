@@ -108,3 +108,28 @@ input edge.
 The catalogue also freezes an aggregate ceiling of 16,777,216 glob-work units
 per executed document. This fixed profile bound is not source-selectable. Changing
 it requires a new catalogue/profile version rather than reinterpreting old IR.
+
+## Opt-in language/IR profile 2
+
+The encoding domain and format version above remain `1`; the exact host-selected
+version tuple (`2`, `2`, `windows-text-change-v2`, `local-windows-read-v1`) separates
+v2 from the unchanged v1 encoding. V2 retains existing tags and adds:
+
+| Tag | V2 node | Payload addition / order |
+| --- | --- | --- |
+| `01` | Read | After MaxBytes: nullable i32 StartLine, nullable i32 LineCount; then the existing edge |
+| `03` | Search | After MaxBytesScanned: i32 ContextLines; then the existing edge |
+| `06` | Diff | TextChangeProfile identity, normalized before path, normalized after path, seven text-option i32 fields, source edge `-1` |
+| `07` | Merge | TextChangeProfile identity, normalized base/ours/theirs paths, seven text-option i32 fields, source edge `-1` |
+
+Nullable integers have a one-byte presence flag followed by the i32 when present.
+Text options are ordered MaxInputBytes, MaxLines, MaxWorkCells, MaxMatrixBytes,
+MaxEdits, MaxOutputBytes, MaxConflicts. Paths retain the v1 normalization/folding
+rules. Node identities use the same domain and encoding; the changed document
+identity binds the new tuple and payload. Source commands use the default text
+options; typed stages can supply bounded options, which are frozen at compilation.
+
+V1 neither encodes these optional fields nor accepts the new commands. Existing
+v1 golden vectors remain qualification tests. See the [manual](language-manual.md)
+and [file-change identity profile](file-change-profile.md) for the separate
+candidate identity; a language document identity never grants apply authority.

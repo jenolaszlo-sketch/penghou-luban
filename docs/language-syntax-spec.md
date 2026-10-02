@@ -3,7 +3,9 @@
 Status: Revised for the implemented minimal profile, 2026-10-01. The bounded
 parser, compiler, typed semantic IR, static preflight, and read pipeline executor
 are implemented. The profile supports read, find, literal search, take, and count.
-Broader syntax, transforms, mutation, and a command-line frontend remain pending.
+The separately selected v2 profile adds file diff/merge, bounded line windows and
+UTF-8 search spans/context. Broader syntax, transforms, mutation source commands,
+and a command-line frontend remain pending. See the [manual](language-manual.md).
 Language runs require `ILanguageAuthorizer` at Preflight, EffectStart,
 ResourceAccess, and Release. The direct API continues to require
 `IEffectAuthorizer`. See the [read profile](read-language-profile.md),
@@ -45,9 +47,9 @@ Source aliases cannot bypass exclusions, delegation limits or release policy.
 | Glob selection | Language root-relative *, ?, **; legacy recursive basename patterns unchanged | Other pattern features require qualification |
 | Results | FileReference, FileContent, SearchMatch and Count language values; legacy results unchanged | Richer fields need their own contracts |
 | Source/pipelines/pure transforms | Minimal parser, typed IR, static preflight, take/count | Broader syntax and transforms remain pending |
-| Ranges/regex/context/metadata | Not implemented beyond current result fields | Individually qualified options/operations |
+| Ranges/regex/context/metadata | V2 bounded line windows and search spans/context | Byte-range reads, regex and metadata remain separate profiles |
 | Mutation/Git/developer commands | Not implemented | Separate effect qualification and modes |
-| Diff/merge language commands and structured pipeline values | Not implemented in language v1 | Pure text API is separate; qualify new descriptors/catalogue/IR under ADR 0005 |
+| Diff/merge language commands and structured pipeline values | Implemented in opt-in v2; v1 unchanged | New descriptors and catalogue/IR; pure text API also available separately |
 
 Do not translate an unsupported language feature into a weaker existing API
 silently. The implemented language profile exposes read commands, qualified path
@@ -371,4 +373,3 @@ after valid prefixes, bad type edges, quoting/comments/directives, rejected shel
 operators, parser/work budgets, alias equivalence, per-resource authorization,
 partial/truncated streams and canonical-version compatibility. Broader parser
 features remain later work.
-
