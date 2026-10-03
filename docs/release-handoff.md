@@ -27,9 +27,7 @@ existing candidate CI proves public adoption.
   isolated consumption. Its publish job stops because NUGET_USER is missing.
 - The final Luban API working tree passes 338 cases on each framework, packs with
   API/TFM compatibility guards, and passes package smoke on both frameworks using
-  those exact IO release artifacts. Final API changes belong to the concurrently
-  completed API review; preserve them and qualify their committed revision before
-  tagging Luban.
+  those exact IO release artifacts. The final API review is committed at 26f4ad943a0f4370627574c43d2a78bd2c14b54d and passes [CI run 37085937530](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37085937530). Preserve that finalized baseline when tagging the release.
 - Hufu passes 93 Biscuit, 101 core and 19 IO cases per framework using the IO and
   Luban packages in an isolated snapshot with a fresh cache and no IO/Luban source.
   [Its JSON report](../../Penghou.Hufu/docs/qualification/candidate-resource-packages.json)

@@ -1,11 +1,11 @@
 param(
     [Parameter(Mandatory)][string] $PackageDirectory,
-    [Parameter(Mandatory)][string] $IoFeedPath,
-    [Parameter(Mandatory)][string] $Version
+    [Parameter(Mandatory)][string] $Version,
+    [string] $IoFeedPath
 )
 $ErrorActionPreference = 'Stop'
 $packageRoot = (Resolve-Path $PackageDirectory).Path
-$feedRoot = (Resolve-Path $IoFeedPath).Path
+$feedRoot = if ($IoFeedPath) { (Resolve-Path $IoFeedPath).Path } else { $null }
 $scratch = Join-Path ([IO.Path]::GetTempPath()) ("luban-package-smoke-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $scratch | Out-Null
 try {
@@ -41,11 +41,16 @@ Console.WriteLine("Luban package-only consumer passed.");
     $cache = Join-Path $scratch 'packages'
     $configPath = Join-Path $scratch 'NuGet.Config'
     $packageSource = [System.Security.SecurityElement]::Escape($packageRoot)
-    $ioSource = [System.Security.SecurityElement]::Escape($feedRoot)
-    @"
-<?xml version="1.0" encoding="utf-8"?>
-<configuration><packageSources><clear/><add key="luban-candidate" value="$packageSource"/><add key="io-candidate" value="$ioSource"/></packageSources></configuration>
-"@ | Set-Content -LiteralPath $configPath -Encoding utf8
+    $sourceLines = @('<packageSources><clear/>', "  <add key=`"luban-candidate`" value=`"$packageSource`"/>")
+    $mappingLines = @('<packageSourceMapping>', '  <packageSource key="luban-candidate"><package pattern="Penghou.Luban"/></packageSource>')
+    if ($feedRoot) {
+        $ioSource = [System.Security.SecurityElement]::Escape($feedRoot)
+        $sourceLines += "  <add key=`"io-candidate`" value=`"$ioSource`"/>"
+        $mappingLines += '  <packageSource key="io-candidate"><package pattern="Penghou.IO.Abstractions"/><package pattern="Penghou.IO.Protocols"/><package pattern="Penghou.IO.Local"/></packageSource>'
+    }
+    $sourceLines += '  <add key="nuget.org" value="https://api.nuget.org/v3/index.json"/>', '</packageSources>'
+    $mappingLines += '  <packageSource key="nuget.org"><package pattern="*"/></packageSource>', '</packageSourceMapping>'
+    @('<?xml version="1.0" encoding="utf-8"?>', '<configuration>', ($sourceLines -join "`n"), ($mappingLines -join "`n"), '</configuration>') -join "`n" | Set-Content -LiteralPath $configPath -Encoding utf8
     dotnet restore (Join-Path $scratch 'Consumer.csproj') --configfile $configPath --packages $cache
     if ($LASTEXITCODE -ne 0) { throw 'Package-only restore failed.' }
     foreach ($tfm in @('net8.0', 'net10.0')) {
