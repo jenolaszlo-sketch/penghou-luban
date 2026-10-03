@@ -10,6 +10,7 @@ public static class LanguageCompiler
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     private const int HardMaxSourceBytes = 65_536, HardMaxTokens = 4096, HardMaxStatements = 64, HardMaxNodes = 128, HardMaxLiteralBytes = 8192, HardMaxDepth = 16;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026", Justification = "Existing overloads have distinct required input types; their signatures and optional defaults are frozen by the public API baseline.")]
     public static LanguageCompilation Compile(string source, WorkspaceId workspace, LanguageCompilerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -41,6 +42,7 @@ public static class LanguageCompiler
         LanguageCompilation Fail(string code, string message) => new(null, new[] { new LanguageDiagnostic(code, message) });
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026", Justification = "Existing overloads have distinct required input types; their signatures and optional defaults are frozen by the public API baseline.")]
     public static LanguageCompilation Compile(IReadOnlyList<IReadOnlyList<LanguageStage>> statements, WorkspaceId workspace,
         LanguageCompilerOptions? options = null, CancellationToken cancellationToken = default)
     {

@@ -1,0 +1,1452 @@
+#nullable enable
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxConflicts = 4096 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxEdits = 4096 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxInputBytes = 131072 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxLines = 4096 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxMatrixBytes = 16777216 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxOutputBytes = 262144 -> int
+const Penghou.Luban.Changes.TextChangeOptions.HardMaxWorkCells = 4000000 -> int
+const Penghou.Luban.Changes.TextChangeProfile.Identity = "penghou.luban.text-lcs.v1" -> string!
+const Penghou.Luban.Changes.TextChangeTransport.CurrentVersion = 1 -> int
+const Penghou.Luban.Changes.TextChangeTransport.MaxDocumentBytes = 1048576 -> int
+const Penghou.Luban.Changes.TextUnifiedDiffOptions.HardMaxContextLines = 100 -> int
+const Penghou.Luban.Changes.TextUnifiedDiffOptions.HardMaxHunks = 4096 -> int
+const Penghou.Luban.Changes.TextUnifiedDiffOptions.HardMaxOutputBytes = 262144 -> int
+const Penghou.Luban.Changes.TextUnifiedDiffProfile.Identity = "penghou.luban.unified.windows.v1" -> string!
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxFiles = 128 -> int
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxHunks = 8192 -> int
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxInputBytes = 1048576 -> int
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxLines = 65536 -> int
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxPayloadBytes = 524288 -> int
+const Penghou.Luban.Changes.TextUnifiedImportOptions.HardMaxWorkUnits = 4000000 -> int
+const Penghou.Luban.Language.LanguageProfile.CatalogueVersion = "windows-read-v1" -> string!
+const Penghou.Luban.Language.LanguageProfile.DescriptorVersion = "1" -> string!
+const Penghou.Luban.Language.LanguageProfile.IrVersion = "1" -> string!
+const Penghou.Luban.Language.LanguageProfile.LanguageVersion = "1" -> string!
+const Penghou.Luban.Language.LanguageProfile.MaxGlobWork = 16777216 -> int
+const Penghou.Luban.Language.LanguageProfile.ProviderProfile = "local-windows-read-v1" -> string!
+const Penghou.Luban.Language.LanguageProfile.TextChangeCatalogueVersion = "windows-text-change-v2" -> string!
+const Penghou.Luban.Language.LanguageProfile.TextChangeIrVersion = "2" -> string!
+const Penghou.Luban.Language.LanguageProfile.TextChangeLanguageVersion = "2" -> string!
+const Penghou.Luban.Language.LanguageProfile.TextChangeProviderProfile = "local-windows-read-v1" -> string!
+const Penghou.Luban.Language.LanguageToolRuntime.ToolSchemaVersion = "1" -> string!
+const Penghou.Luban.Resolution.PreviewProfile.CatalogueVersion = "windows-patch-capture-v2" -> string!
+const Penghou.Luban.Resolution.PreviewProfile.ProviderProfile = "local-windows-read-v1" -> string!
+const Penghou.Luban.Resolution.PreviewProfile.SchemaVersion = "1" -> string!
+Penghou.Luban.AuthorizationDecision
+Penghou.Luban.AuthorizationDecision.Deny = 1 -> Penghou.Luban.AuthorizationDecision
+Penghou.Luban.AuthorizationDecision.Permit = 0 -> Penghou.Luban.AuthorizationDecision
+Penghou.Luban.Changes.DecodedTextDiff
+Penghou.Luban.Changes.DecodedTextDiff.DecodedTextDiff(Penghou.Luban.Changes.TextDiffResult! Result, Penghou.Luban.Changes.TextChangeOptions! Options, string! Identity) -> void
+Penghou.Luban.Changes.DecodedTextDiff.Identity.get -> string!
+Penghou.Luban.Changes.DecodedTextDiff.Identity.init -> void
+Penghou.Luban.Changes.DecodedTextDiff.Options.get -> Penghou.Luban.Changes.TextChangeOptions!
+Penghou.Luban.Changes.DecodedTextDiff.Options.init -> void
+Penghou.Luban.Changes.DecodedTextDiff.Result.get -> Penghou.Luban.Changes.TextDiffResult!
+Penghou.Luban.Changes.DecodedTextDiff.Result.init -> void
+Penghou.Luban.Changes.DecodedTextMerge
+Penghou.Luban.Changes.DecodedTextMerge.DecodedTextMerge(Penghou.Luban.Changes.TextMergeResult! Result, Penghou.Luban.Changes.TextChangeOptions! Options, string! Identity) -> void
+Penghou.Luban.Changes.DecodedTextMerge.Identity.get -> string!
+Penghou.Luban.Changes.DecodedTextMerge.Identity.init -> void
+Penghou.Luban.Changes.DecodedTextMerge.Options.get -> Penghou.Luban.Changes.TextChangeOptions!
+Penghou.Luban.Changes.DecodedTextMerge.Options.init -> void
+Penghou.Luban.Changes.DecodedTextMerge.Result.get -> Penghou.Luban.Changes.TextMergeResult!
+Penghou.Luban.Changes.DecodedTextMerge.Result.init -> void
+Penghou.Luban.Changes.EncodedTextChange
+Penghou.Luban.Changes.EncodedTextChange.Identity.get -> string!
+Penghou.Luban.Changes.EncodedTextChange.ToArray() -> byte[]!
+Penghou.Luban.Changes.FileChangeAuthorizationDecision
+Penghou.Luban.Changes.FileChangeAuthorizationDecision.FileChangeAuthorizationDecision(Penghou.Luban.Changes.FileChangeAuthorizationStatus Status) -> void
+Penghou.Luban.Changes.FileChangeAuthorizationDecision.Status.get -> Penghou.Luban.Changes.FileChangeAuthorizationStatus
+Penghou.Luban.Changes.FileChangeAuthorizationDecision.Status.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Action.get -> Penghou.IO.Abstractions.ResourceAction?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Action.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.CandidateIdentity.get -> string?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.CandidateIdentity.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ContentByteLength.get -> int?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ContentByteLength.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ContentSha256.get -> string?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ContentSha256.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.FileChangeAuthorizationRequest(Penghou.Luban.EffectInvocation! Invocation, Penghou.IO.Abstractions.WorkspaceId Workspace, string! OperationId, Penghou.Luban.Changes.FileChangeOperation Operation, Penghou.Luban.Changes.FileChangePhase Phase, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FileChangeResource!>! Inputs, Penghou.Luban.Changes.TextChangeOptions? TextOptions = null, Penghou.Luban.Changes.TextUnifiedImportOptions? ImportOptions = null, Penghou.Luban.Changes.FileChangeLimits? Limits = null, Penghou.Luban.Changes.FileChangeResource? Resource = null, Penghou.IO.Abstractions.ResourceAction? Action = null, Penghou.IO.Abstractions.RequestIdentity? RequestIdentity = null, Penghou.IO.Abstractions.ResourceVersion? ObservedVersion = null, string? ContentSha256 = null, int? ContentByteLength = null, string? CandidateIdentity = null, string? ResultIdentity = null, Penghou.Luban.Changes.FileChangeStatus? Outcome = null, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FileChangeInputSnapshot!>? Observations = null, string? ProviderProfile = null, int? ReadLimitBytes = null) -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ImportOptions.get -> Penghou.Luban.Changes.TextUnifiedImportOptions?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ImportOptions.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Inputs.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FileChangeResource!>!
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Inputs.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Invocation.get -> Penghou.Luban.EffectInvocation!
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Invocation.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Limits.get -> Penghou.Luban.Changes.FileChangeLimits?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Limits.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Observations.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FileChangeInputSnapshot!>?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Observations.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ObservedVersion.get -> Penghou.IO.Abstractions.ResourceVersion?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ObservedVersion.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Operation.get -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Operation.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.OperationId.get -> string!
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.OperationId.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Outcome.get -> Penghou.Luban.Changes.FileChangeStatus?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Outcome.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Phase.get -> Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Phase.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ProviderProfile.get -> string?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ProviderProfile.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ReadLimitBytes.get -> int?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ReadLimitBytes.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.RequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.RequestIdentity.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Resource.get -> Penghou.Luban.Changes.FileChangeResource?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Resource.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ResultIdentity.get -> string?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.ResultIdentity.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.TextOptions.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.TextOptions.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Changes.FileChangeAuthorizationRequest.Workspace.init -> void
+Penghou.Luban.Changes.FileChangeAuthorizationStatus
+Penghou.Luban.Changes.FileChangeAuthorizationStatus.Deny = 1 -> Penghou.Luban.Changes.FileChangeAuthorizationStatus
+Penghou.Luban.Changes.FileChangeAuthorizationStatus.Permit = 0 -> Penghou.Luban.Changes.FileChangeAuthorizationStatus
+Penghou.Luban.Changes.FileChangeAuthorizationStatus.Unavailable = 2 -> Penghou.Luban.Changes.FileChangeAuthorizationStatus
+Penghou.Luban.Changes.FileChangeCaptureBridge
+Penghou.Luban.Changes.FileChangeCaptureBridge.CaptureAsync(Penghou.Luban.EffectInvocation! invocation, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FilePatchCandidate!>! candidates, Penghou.Luban.Resolution.PreviewLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeCaptureResult!>
+Penghou.Luban.Changes.FileChangeCaptureBridge.FileChangeCaptureBridge(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Resolution.IPreviewAuthorizer! authorizer) -> void
+Penghou.Luban.Changes.FileChangeCaptureResult
+Penghou.Luban.Changes.FileChangeCaptureResult.CaptureStatus.get -> Penghou.Luban.Resolution.PreviewRunStatus?
+Penghou.Luban.Changes.FileChangeCaptureResult.CaptureStatus.init -> void
+Penghou.Luban.Changes.FileChangeCaptureResult.Document.get -> Penghou.Luban.Resolution.CompiledPreviewDocument?
+Penghou.Luban.Changes.FileChangeCaptureResult.Document.init -> void
+Penghou.Luban.Changes.FileChangeCaptureResult.FileChangeCaptureResult(Penghou.Luban.Changes.FileChangeCaptureStatus Status, Penghou.Luban.Resolution.CompiledPreviewDocument? Document = null, Penghou.Luban.Resolution.ResolvedEffectPlan? Plan = null, Penghou.Luban.Resolution.PreviewRunStatus? CaptureStatus = null) -> void
+Penghou.Luban.Changes.FileChangeCaptureResult.Plan.get -> Penghou.Luban.Resolution.ResolvedEffectPlan?
+Penghou.Luban.Changes.FileChangeCaptureResult.Plan.init -> void
+Penghou.Luban.Changes.FileChangeCaptureResult.Status.get -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureResult.Status.init -> void
+Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.CaptureFailed = 5 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.InvalidCandidate = 2 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.NoChanges = 1 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.Stale = 4 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.Succeeded = 0 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeCaptureStatus.UnsupportedCandidate = 3 -> Penghou.Luban.Changes.FileChangeCaptureStatus
+Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.Base = 2 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.Ours = 3 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.ProposedSource = 1 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.Target = 0 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.Theirs = 4 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputRole.UnifiedTarget = 5 -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeInputSnapshot
+Penghou.Luban.Changes.FileChangeInputSnapshot.ByteLength.get -> int
+Penghou.Luban.Changes.FileChangeInputSnapshot.Content.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Changes.FileChangeInputSnapshot.Resource.get -> Penghou.Luban.Changes.FileChangeResource!
+Penghou.Luban.Changes.FileChangeInputSnapshot.Sha256.get -> string!
+Penghou.Luban.Changes.FileChangeInputSnapshot.Version.get -> Penghou.IO.Abstractions.ResourceVersion
+Penghou.Luban.Changes.FileChangeLimits
+Penghou.Luban.Changes.FileChangeLimits.FileChangeLimits(int MaxFiles = 3, int MaxTotalReadBytes = 393216, int TimeoutMilliseconds = 30000, int MaxTotalRetainedBytes = 4194304) -> void
+Penghou.Luban.Changes.FileChangeLimits.MaxFiles.get -> int
+Penghou.Luban.Changes.FileChangeLimits.MaxFiles.init -> void
+Penghou.Luban.Changes.FileChangeLimits.MaxTotalReadBytes.get -> int
+Penghou.Luban.Changes.FileChangeLimits.MaxTotalReadBytes.init -> void
+Penghou.Luban.Changes.FileChangeLimits.MaxTotalRetainedBytes.get -> int
+Penghou.Luban.Changes.FileChangeLimits.MaxTotalRetainedBytes.init -> void
+Penghou.Luban.Changes.FileChangeLimits.TimeoutMilliseconds.get -> int
+Penghou.Luban.Changes.FileChangeLimits.TimeoutMilliseconds.init -> void
+Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangeOperation.CandidateValidation = 2 -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangeOperation.Diff = 0 -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangeOperation.Merge = 1 -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangeOperation.UnifiedImport = 3 -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangePhase.Preflight = 0 -> Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangePhase.ResourceAccess = 2 -> Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangePhase.ResultRelease = 3 -> Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangePhase.TargetAdmission = 1 -> Penghou.Luban.Changes.FileChangePhase
+Penghou.Luban.Changes.FileChangeResource
+Penghou.Luban.Changes.FileChangeResource.FileChangeResource(Penghou.IO.Abstractions.WorkspaceId Workspace, Penghou.IO.Abstractions.WorkspacePath Path, Penghou.Luban.Changes.FileChangeInputRole Role) -> void
+Penghou.Luban.Changes.FileChangeResource.Path.get -> Penghou.IO.Abstractions.WorkspacePath
+Penghou.Luban.Changes.FileChangeResource.Path.init -> void
+Penghou.Luban.Changes.FileChangeResource.Role.get -> Penghou.Luban.Changes.FileChangeInputRole
+Penghou.Luban.Changes.FileChangeResource.Role.init -> void
+Penghou.Luban.Changes.FileChangeResource.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Changes.FileChangeResource.Workspace.init -> void
+Penghou.Luban.Changes.FileChangeResult
+Penghou.Luban.Changes.FileChangeResult.Candidates.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FilePatchCandidate!>!
+Penghou.Luban.Changes.FileChangeResult.Conflicts.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextMergeConflict!>!
+Penghou.Luban.Changes.FileChangeResult.Diff.get -> Penghou.Luban.Changes.TextDiffResult?
+Penghou.Luban.Changes.FileChangeResult.Merge.get -> Penghou.Luban.Changes.TextMergeResult?
+Penghou.Luban.Changes.FileChangeResult.ResultIdentity.get -> string?
+Penghou.Luban.Changes.FileChangeResult.Status.get -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeResult.ValidatedCandidate.get -> Penghou.Luban.Changes.FilePatchCandidate?
+Penghou.Luban.Changes.FileChangeRuntime
+Penghou.Luban.Changes.FileChangeRuntime.DiffAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Changes.FileDiffRequest! request, Penghou.Luban.Changes.FileChangeLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeResult!>
+Penghou.Luban.Changes.FileChangeRuntime.FileChangeRuntime(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Changes.IFileChangeAuthorizer! authorizer) -> void
+Penghou.Luban.Changes.FileChangeRuntime.MaterializeUnifiedAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Changes.TextUnifiedPatchCandidate! candidate, Penghou.Luban.Changes.TextUnifiedImportOptions? importOptions = null, Penghou.Luban.Changes.TextChangeOptions? textOptions = null, Penghou.Luban.Changes.FileChangeLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeResult!>
+Penghou.Luban.Changes.FileChangeRuntime.MergeAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Changes.FileMergeRequest! request, Penghou.Luban.Changes.FileChangeLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeResult!>
+Penghou.Luban.Changes.FileChangeRuntime.ValidateCandidateAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Changes.FilePatchCandidate! candidate, Penghou.Luban.Changes.FileChangeLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeResult!>
+Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.AccessDenied = 11 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.AuthorizationDenied = 8 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.AuthorizationUnavailable = 9 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.Cancelled = 7 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.Conflicted = 1 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.InvalidInput = 4 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.LimitExceeded = 6 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.NotFound = 10 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.ProviderFailure = 12 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.Stale = 3 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.Succeeded = 0 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.UnsupportedProfile = 5 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileChangeStatus.Valid = 2 -> Penghou.Luban.Changes.FileChangeStatus
+Penghou.Luban.Changes.FileDiffRequest
+Penghou.Luban.Changes.FileDiffRequest.FileDiffRequest(string! TargetPath, string! ProposedSourcePath, Penghou.Luban.Changes.TextChangeOptions? Options = null) -> void
+Penghou.Luban.Changes.FileDiffRequest.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Changes.FileDiffRequest.Options.init -> void
+Penghou.Luban.Changes.FileDiffRequest.ProposedSourcePath.get -> string!
+Penghou.Luban.Changes.FileDiffRequest.ProposedSourcePath.init -> void
+Penghou.Luban.Changes.FileDiffRequest.TargetPath.get -> string!
+Penghou.Luban.Changes.FileDiffRequest.TargetPath.init -> void
+Penghou.Luban.Changes.FileMergeRequest
+Penghou.Luban.Changes.FileMergeRequest.BasePath.get -> string!
+Penghou.Luban.Changes.FileMergeRequest.BasePath.init -> void
+Penghou.Luban.Changes.FileMergeRequest.FileMergeRequest(string! BasePath, string! OursPath, string! TheirsPath, Penghou.Luban.Changes.TextChangeOptions? Options = null) -> void
+Penghou.Luban.Changes.FileMergeRequest.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Changes.FileMergeRequest.Options.init -> void
+Penghou.Luban.Changes.FileMergeRequest.OursPath.get -> string!
+Penghou.Luban.Changes.FileMergeRequest.OursPath.init -> void
+Penghou.Luban.Changes.FileMergeRequest.TheirsPath.get -> string!
+Penghou.Luban.Changes.FileMergeRequest.TheirsPath.init -> void
+Penghou.Luban.Changes.FilePatchCandidate
+Penghou.Luban.Changes.FilePatchCandidate.CandidateIdentity.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>!
+Penghou.Luban.Changes.FilePatchCandidate.Inputs.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.FileChangeInputSnapshot!>!
+Penghou.Luban.Changes.FilePatchCandidate.Limits.get -> Penghou.Luban.Changes.FileChangeLimits!
+Penghou.Luban.Changes.FilePatchCandidate.Operation.get -> Penghou.Luban.Changes.FileChangeOperation
+Penghou.Luban.Changes.FilePatchCandidate.Options.get -> Penghou.Luban.Changes.TextChangeOptions!
+Penghou.Luban.Changes.FilePatchCandidate.OriginalByteLength.get -> int
+Penghou.Luban.Changes.FilePatchCandidate.OriginalContent.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Changes.FilePatchCandidate.OriginalSha256.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.OriginalVersion.get -> Penghou.IO.Abstractions.ResourceVersion
+Penghou.Luban.Changes.FilePatchCandidate.ProfileIdentity.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.ProposedByteLength.get -> int
+Penghou.Luban.Changes.FilePatchCandidate.ProposedContent.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Changes.FilePatchCandidate.ProposedSha256.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.ProviderProfile.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.TargetPath.get -> string!
+Penghou.Luban.Changes.FilePatchCandidate.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Changes.IFileChangeAuthorizer
+Penghou.Luban.Changes.IFileChangeAuthorizer.AuthorizeAsync(Penghou.Luban.Changes.FileChangeAuthorizationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Changes.FileChangeAuthorizationDecision!>
+Penghou.Luban.Changes.PatchLimits
+Penghou.Luban.Changes.PatchLimits.MaxOutputBytes.get -> int
+Penghou.Luban.Changes.PatchLimits.MaxOutputBytes.init -> void
+Penghou.Luban.Changes.PatchLimits.MaxPatchCount.get -> int
+Penghou.Luban.Changes.PatchLimits.MaxPatchCount.init -> void
+Penghou.Luban.Changes.PatchLimits.MaxReplacementBytes.get -> int
+Penghou.Luban.Changes.PatchLimits.MaxReplacementBytes.init -> void
+Penghou.Luban.Changes.PatchLimits.PatchLimits(int MaxPatchCount, int MaxReplacementBytes, int MaxOutputBytes) -> void
+Penghou.Luban.Changes.TextChangeOptions
+Penghou.Luban.Changes.TextChangeOptions.MaxConflicts.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxConflicts.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxEdits.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxEdits.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxInputBytes.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxInputBytes.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxLines.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxLines.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxMatrixBytes.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxMatrixBytes.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxOutputBytes.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxOutputBytes.init -> void
+Penghou.Luban.Changes.TextChangeOptions.MaxWorkCells.get -> int
+Penghou.Luban.Changes.TextChangeOptions.MaxWorkCells.init -> void
+Penghou.Luban.Changes.TextChangeProfile
+Penghou.Luban.Changes.TextChangeTransport
+Penghou.Luban.Changes.TextChangeTransportDecodeResult<T>
+Penghou.Luban.Changes.TextChangeTransportDecodeResult<T>.Status.get -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportDecodeResult<T>.Value.get -> T?
+Penghou.Luban.Changes.TextChangeTransportEncodeResult
+Penghou.Luban.Changes.TextChangeTransportEncodeResult.Status.get -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportEncodeResult.Value.get -> Penghou.Luban.Changes.EncodedTextChange?
+Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportStatus.Cancelled = 4 -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportStatus.InvalidInput = 1 -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportStatus.LimitExceeded = 3 -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportStatus.Succeeded = 0 -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextChangeTransportStatus.Unsupported = 2 -> Penghou.Luban.Changes.TextChangeTransportStatus
+Penghou.Luban.Changes.TextContentSnapshot
+Penghou.Luban.Changes.TextContentSnapshot.ByteLength.get -> int
+Penghou.Luban.Changes.TextContentSnapshot.Sha256.get -> string!
+Penghou.Luban.Changes.TextDiffEngine
+Penghou.Luban.Changes.TextDiffResult
+Penghou.Luban.Changes.TextDiffResult.After.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextDiffResult.Before.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextDiffResult.Changed.get -> bool
+Penghou.Luban.Changes.TextDiffResult.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>!
+Penghou.Luban.Changes.TextDiffResult.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Changes.TextDiffResult.ProfileIdentity.get -> string!
+Penghou.Luban.Changes.TextDiffResult.Status.get -> Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDiffStatus.Cancelled = 3 -> Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDiffStatus.InvalidInput = 1 -> Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDiffStatus.LimitExceeded = 2 -> Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDiffStatus.Succeeded = 0 -> Penghou.Luban.Changes.TextDiffStatus
+Penghou.Luban.Changes.TextDisplayHunk
+Penghou.Luban.Changes.TextDisplayHunk.Body.get -> string!
+Penghou.Luban.Changes.TextDisplayHunk.Body.init -> void
+Penghou.Luban.Changes.TextDisplayHunk.NewRange.get -> Penghou.Luban.Changes.TextDisplayLineRange
+Penghou.Luban.Changes.TextDisplayHunk.NewRange.init -> void
+Penghou.Luban.Changes.TextDisplayHunk.OldRange.get -> Penghou.Luban.Changes.TextDisplayLineRange
+Penghou.Luban.Changes.TextDisplayHunk.OldRange.init -> void
+Penghou.Luban.Changes.TextDisplayHunk.TextDisplayHunk(Penghou.Luban.Changes.TextDisplayLineRange OldRange, Penghou.Luban.Changes.TextDisplayLineRange NewRange, string! Body) -> void
+Penghou.Luban.Changes.TextDisplayLineRange
+Penghou.Luban.Changes.TextDisplayLineRange.Count.get -> int
+Penghou.Luban.Changes.TextDisplayLineRange.Count.init -> void
+Penghou.Luban.Changes.TextDisplayLineRange.Start.get -> int
+Penghou.Luban.Changes.TextDisplayLineRange.Start.init -> void
+Penghou.Luban.Changes.TextDisplayLineRange.TextDisplayLineRange() -> void
+Penghou.Luban.Changes.TextDisplayLineRange.TextDisplayLineRange(int Start, int Count) -> void
+Penghou.Luban.Changes.TextEdit
+Penghou.Luban.Changes.TextEdit.DeleteLength.get -> int
+Penghou.Luban.Changes.TextEdit.DeleteLength.init -> void
+Penghou.Luban.Changes.TextEdit.Replacement.get -> string!
+Penghou.Luban.Changes.TextEdit.Replacement.init -> void
+Penghou.Luban.Changes.TextEdit.StartOffset.get -> int
+Penghou.Luban.Changes.TextEdit.StartOffset.init -> void
+Penghou.Luban.Changes.TextEdit.TextEdit(int StartOffset, int DeleteLength, string! Replacement) -> void
+Penghou.Luban.Changes.TextMergeConflict
+Penghou.Luban.Changes.TextMergeConflict.BaseDeleteLength.get -> int
+Penghou.Luban.Changes.TextMergeConflict.BaseDeleteLength.init -> void
+Penghou.Luban.Changes.TextMergeConflict.BaseEndLine.get -> int
+Penghou.Luban.Changes.TextMergeConflict.BaseEndLine.init -> void
+Penghou.Luban.Changes.TextMergeConflict.BaseStartLine.get -> int
+Penghou.Luban.Changes.TextMergeConflict.BaseStartLine.init -> void
+Penghou.Luban.Changes.TextMergeConflict.BaseStartOffset.get -> int
+Penghou.Luban.Changes.TextMergeConflict.BaseStartOffset.init -> void
+Penghou.Luban.Changes.TextMergeConflict.BaseText.get -> string!
+Penghou.Luban.Changes.TextMergeConflict.BaseText.init -> void
+Penghou.Luban.Changes.TextMergeConflict.OursText.get -> string!
+Penghou.Luban.Changes.TextMergeConflict.OursText.init -> void
+Penghou.Luban.Changes.TextMergeConflict.TextMergeConflict(int BaseStartLine, int BaseEndLine, int BaseStartOffset, int BaseDeleteLength, string! BaseText, string! OursText, string! TheirsText) -> void
+Penghou.Luban.Changes.TextMergeConflict.TheirsText.get -> string!
+Penghou.Luban.Changes.TextMergeConflict.TheirsText.init -> void
+Penghou.Luban.Changes.TextMergeEngine
+Penghou.Luban.Changes.TextMergeResult
+Penghou.Luban.Changes.TextMergeResult.Base.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextMergeResult.Conflicts.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextMergeConflict!>!
+Penghou.Luban.Changes.TextMergeResult.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>!
+Penghou.Luban.Changes.TextMergeResult.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Changes.TextMergeResult.Ours.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextMergeResult.ProfileIdentity.get -> string!
+Penghou.Luban.Changes.TextMergeResult.Result.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextMergeResult.Status.get -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeResult.Theirs.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextMergeResult.Value.get -> string?
+Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeStatus.Cancelled = 4 -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeStatus.Clean = 0 -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeStatus.Conflicted = 1 -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeStatus.InvalidInput = 2 -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextMergeStatus.LimitExceeded = 3 -> Penghou.Luban.Changes.TextMergeStatus
+Penghou.Luban.Changes.TextPatch
+Penghou.Luban.Changes.TextPatch.DeleteLength.get -> int
+Penghou.Luban.Changes.TextPatch.DeleteLength.init -> void
+Penghou.Luban.Changes.TextPatch.ReplacementUtf8.get -> System.ReadOnlyMemory<byte>
+Penghou.Luban.Changes.TextPatch.ReplacementUtf8.init -> void
+Penghou.Luban.Changes.TextPatch.StartOffset.get -> int
+Penghou.Luban.Changes.TextPatch.StartOffset.init -> void
+Penghou.Luban.Changes.TextPatch.TextPatch(int StartOffset, int DeleteLength, System.ReadOnlyMemory<byte> ReplacementUtf8) -> void
+Penghou.Luban.Changes.TextUnifiedDiffOptions
+Penghou.Luban.Changes.TextUnifiedDiffOptions.ChangeOptions.get -> Penghou.Luban.Changes.TextChangeOptions!
+Penghou.Luban.Changes.TextUnifiedDiffOptions.ChangeOptions.init -> void
+Penghou.Luban.Changes.TextUnifiedDiffOptions.ContextLines.get -> int
+Penghou.Luban.Changes.TextUnifiedDiffOptions.ContextLines.init -> void
+Penghou.Luban.Changes.TextUnifiedDiffOptions.MaxHunks.get -> int
+Penghou.Luban.Changes.TextUnifiedDiffOptions.MaxHunks.init -> void
+Penghou.Luban.Changes.TextUnifiedDiffOptions.MaxOutputBytes.get -> int
+Penghou.Luban.Changes.TextUnifiedDiffOptions.MaxOutputBytes.init -> void
+Penghou.Luban.Changes.TextUnifiedDiffProfile
+Penghou.Luban.Changes.TextUnifiedDiffRenderer
+Penghou.Luban.Changes.TextUnifiedDiffResult
+Penghou.Luban.Changes.TextUnifiedDiffResult.After.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextUnifiedDiffResult.AlgorithmProfileIdentity.get -> string!
+Penghou.Luban.Changes.TextUnifiedDiffResult.Before.get -> Penghou.Luban.Changes.TextContentSnapshot?
+Penghou.Luban.Changes.TextUnifiedDiffResult.Hunks.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextDisplayHunk!>!
+Penghou.Luban.Changes.TextUnifiedDiffResult.ProfileIdentity.get -> string!
+Penghou.Luban.Changes.TextUnifiedDiffResult.Status.get -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffResult.UnifiedDiff.get -> string?
+Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffStatus.Cancelled = 3 -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffStatus.InvalidInput = 1 -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffStatus.LimitExceeded = 2 -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffStatus.Succeeded = 0 -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedDiffStatus.Unsupported = 4 -> Penghou.Luban.Changes.TextUnifiedDiffStatus
+Penghou.Luban.Changes.TextUnifiedFileCandidate
+Penghou.Luban.Changes.TextUnifiedFileCandidate.Hunks.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextUnifiedHunk!>!
+Penghou.Luban.Changes.TextUnifiedFileCandidate.RelativePath.get -> string!
+Penghou.Luban.Changes.TextUnifiedHunk
+Penghou.Luban.Changes.TextUnifiedHunk.Lines.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextUnifiedLine!>!
+Penghou.Luban.Changes.TextUnifiedHunk.NewCount.get -> int
+Penghou.Luban.Changes.TextUnifiedHunk.NewStart.get -> int
+Penghou.Luban.Changes.TextUnifiedHunk.OldCount.get -> int
+Penghou.Luban.Changes.TextUnifiedHunk.OldStart.get -> int
+Penghou.Luban.Changes.TextUnifiedImport
+Penghou.Luban.Changes.TextUnifiedImportOptions
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxFiles.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxFiles.init -> void
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxHunks.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxHunks.init -> void
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxInputBytes.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxInputBytes.init -> void
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxLines.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxLines.init -> void
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxPayloadBytes.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxPayloadBytes.init -> void
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxWorkUnits.get -> int
+Penghou.Luban.Changes.TextUnifiedImportOptions.MaxWorkUnits.init -> void
+Penghou.Luban.Changes.TextUnifiedImportResult
+Penghou.Luban.Changes.TextUnifiedImportResult.Candidate.get -> Penghou.Luban.Changes.TextUnifiedPatchCandidate?
+Penghou.Luban.Changes.TextUnifiedImportResult.ErrorCode.get -> string?
+Penghou.Luban.Changes.TextUnifiedImportResult.Status.get -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus.Cancelled = 4 -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus.InvalidInput = 2 -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus.LimitExceeded = 3 -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus.Succeeded = 0 -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedImportStatus.Unsupported = 1 -> Penghou.Luban.Changes.TextUnifiedImportStatus
+Penghou.Luban.Changes.TextUnifiedLine
+Penghou.Luban.Changes.TextUnifiedLine.Kind.get -> Penghou.Luban.Changes.TextUnifiedLineKind
+Penghou.Luban.Changes.TextUnifiedLine.MarkedNoNewline.get -> bool
+Penghou.Luban.Changes.TextUnifiedLine.Text.get -> string!
+Penghou.Luban.Changes.TextUnifiedLineKind
+Penghou.Luban.Changes.TextUnifiedLineKind.Add = 2 -> Penghou.Luban.Changes.TextUnifiedLineKind
+Penghou.Luban.Changes.TextUnifiedLineKind.Context = 0 -> Penghou.Luban.Changes.TextUnifiedLineKind
+Penghou.Luban.Changes.TextUnifiedLineKind.Delete = 1 -> Penghou.Luban.Changes.TextUnifiedLineKind
+Penghou.Luban.Changes.TextUnifiedMaterializationResult
+Penghou.Luban.Changes.TextUnifiedMaterializationResult.ErrorCode.get -> string?
+Penghou.Luban.Changes.TextUnifiedMaterializationResult.Files.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextUnifiedMaterializedFile!>!
+Penghou.Luban.Changes.TextUnifiedMaterializationResult.Status.get -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus.Cancelled = 4 -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus.InvalidInput = 2 -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus.LimitExceeded = 3 -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus.Stale = 1 -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializationStatus.Succeeded = 0 -> Penghou.Luban.Changes.TextUnifiedMaterializationStatus
+Penghou.Luban.Changes.TextUnifiedMaterializedFile
+Penghou.Luban.Changes.TextUnifiedMaterializedFile.After.get -> Penghou.Luban.Changes.TextContentSnapshot!
+Penghou.Luban.Changes.TextUnifiedMaterializedFile.Before.get -> Penghou.Luban.Changes.TextContentSnapshot!
+Penghou.Luban.Changes.TextUnifiedMaterializedFile.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>!
+Penghou.Luban.Changes.TextUnifiedMaterializedFile.ProposedText.get -> string!
+Penghou.Luban.Changes.TextUnifiedMaterializedFile.RelativePath.get -> string!
+Penghou.Luban.Changes.TextUnifiedPatchCandidate
+Penghou.Luban.Changes.TextUnifiedPatchCandidate.Files.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextUnifiedFileCandidate!>!
+Penghou.Luban.Changes.TextUnifiedPatchCandidate.ProfileIdentity.get -> string!
+Penghou.Luban.Changes.Utf8PatchMaterializer
+Penghou.Luban.EffectAuthorizationPhase
+Penghou.Luban.EffectAuthorizationPhase.Admission = 0 -> Penghou.Luban.EffectAuthorizationPhase
+Penghou.Luban.EffectAuthorizationPhase.Release = 2 -> Penghou.Luban.EffectAuthorizationPhase
+Penghou.Luban.EffectAuthorizationPhase.ResourceAccess = 1 -> Penghou.Luban.EffectAuthorizationPhase
+Penghou.Luban.EffectAuthorizationRequest
+Penghou.Luban.EffectAuthorizationRequest.Action.get -> Penghou.IO.Abstractions.ResourceAction?
+Penghou.Luban.EffectAuthorizationRequest.Action.init -> void
+Penghou.Luban.EffectAuthorizationRequest.EffectAuthorizationRequest(Penghou.Luban.EffectInvocation! Invocation, Penghou.Luban.FileEffectKind EffectKind, string! RequestDigest, string! WorkspaceId, string! RelativePath, Penghou.Luban.EffectAuthorizationPhase Phase = Penghou.Luban.EffectAuthorizationPhase.Admission, Penghou.IO.Abstractions.ResourceAction? Action = null, Penghou.IO.Abstractions.RequestIdentity? ResourceRequestIdentity = null) -> void
+Penghou.Luban.EffectAuthorizationRequest.EffectKind.get -> Penghou.Luban.FileEffectKind
+Penghou.Luban.EffectAuthorizationRequest.EffectKind.init -> void
+Penghou.Luban.EffectAuthorizationRequest.Invocation.get -> Penghou.Luban.EffectInvocation!
+Penghou.Luban.EffectAuthorizationRequest.Invocation.init -> void
+Penghou.Luban.EffectAuthorizationRequest.Phase.get -> Penghou.Luban.EffectAuthorizationPhase
+Penghou.Luban.EffectAuthorizationRequest.Phase.init -> void
+Penghou.Luban.EffectAuthorizationRequest.RelativePath.get -> string!
+Penghou.Luban.EffectAuthorizationRequest.RelativePath.init -> void
+Penghou.Luban.EffectAuthorizationRequest.RequestDigest.get -> string!
+Penghou.Luban.EffectAuthorizationRequest.RequestDigest.init -> void
+Penghou.Luban.EffectAuthorizationRequest.ResourceRequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity?
+Penghou.Luban.EffectAuthorizationRequest.ResourceRequestIdentity.init -> void
+Penghou.Luban.EffectAuthorizationRequest.WorkspaceId.get -> string!
+Penghou.Luban.EffectAuthorizationRequest.WorkspaceId.init -> void
+Penghou.Luban.EffectInvocation
+Penghou.Luban.EffectInvocation.AttemptId.get -> string!
+Penghou.Luban.EffectInvocation.AttemptId.init -> void
+Penghou.Luban.EffectInvocation.EffectId.get -> string!
+Penghou.Luban.EffectInvocation.EffectId.init -> void
+Penghou.Luban.EffectInvocation.EffectInvocation(string! SubjectId, string! EffectId, string! AttemptId) -> void
+Penghou.Luban.EffectInvocation.SubjectId.get -> string!
+Penghou.Luban.EffectInvocation.SubjectId.init -> void
+Penghou.Luban.EffectResult<T>
+Penghou.Luban.EffectResult<T>.Detail.get -> string?
+Penghou.Luban.EffectResult<T>.Detail.init -> void
+Penghou.Luban.EffectResult<T>.EffectResult(Penghou.Luban.EffectStatus Status, T? Value = default(T?), string? Detail = null) -> void
+Penghou.Luban.EffectResult<T>.Status.get -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectResult<T>.Status.init -> void
+Penghou.Luban.EffectResult<T>.Succeeded.get -> bool
+Penghou.Luban.EffectResult<T>.Value.get -> T?
+Penghou.Luban.EffectResult<T>.Value.init -> void
+Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.AccessDenied = 9 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.AuthorityDenied = 2 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.AuthorizationUnavailable = 3 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.DeadlineExceeded = 12 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.InvalidPath = 4 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.InvalidRequest = 7 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.LimitExceeded = 8 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.NotFound = 1 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.OutsideWorkspace = 5 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.ProviderFailure = 11 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.Succeeded = 0 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.UnsupportedPlatform = 6 -> Penghou.Luban.EffectStatus
+Penghou.Luban.EffectStatus.UnsupportedProfile = 10 -> Penghou.Luban.EffectStatus
+Penghou.Luban.Execution.BatchAdmissionRequest
+Penghou.Luban.Execution.BatchAdmissionRequest.BatchAdmissionRequest(string! SegmentId, Penghou.Luban.Resolution.CompiledPreviewDocument! Document, Penghou.Luban.Resolution.ResolvedEffectPlan! Plan, string! WriterProfile, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.PatchAdmissionRequest!>! Operations, Penghou.Luban.Execution.BatchPredecessor? Predecessor) -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.Document.get -> Penghou.Luban.Resolution.CompiledPreviewDocument!
+Penghou.Luban.Execution.BatchAdmissionRequest.Document.init -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.Operations.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.PatchAdmissionRequest!>!
+Penghou.Luban.Execution.BatchAdmissionRequest.Operations.init -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.Plan.get -> Penghou.Luban.Resolution.ResolvedEffectPlan!
+Penghou.Luban.Execution.BatchAdmissionRequest.Plan.init -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.Predecessor.get -> Penghou.Luban.Execution.BatchPredecessor?
+Penghou.Luban.Execution.BatchAdmissionRequest.Predecessor.init -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.SegmentId.get -> string!
+Penghou.Luban.Execution.BatchAdmissionRequest.SegmentId.init -> void
+Penghou.Luban.Execution.BatchAdmissionRequest.WriterProfile.get -> string!
+Penghou.Luban.Execution.BatchAdmissionRequest.WriterProfile.init -> void
+Penghou.Luban.Execution.BatchExecutionResult
+Penghou.Luban.Execution.BatchExecutionResult.BatchExecutionResult(Penghou.IO.Abstractions.ResourceFailureKind? Failure, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.BatchRecoveryEntry!>! Entries) -> void
+Penghou.Luban.Execution.BatchExecutionResult.Entries.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.BatchRecoveryEntry!>!
+Penghou.Luban.Execution.BatchExecutionResult.Entries.init -> void
+Penghou.Luban.Execution.BatchExecutionResult.Failure.get -> Penghou.IO.Abstractions.ResourceFailureKind?
+Penghou.Luban.Execution.BatchExecutionResult.Failure.init -> void
+Penghou.Luban.Execution.BatchExecutionResult.Succeeded.get -> bool
+Penghou.Luban.Execution.BatchPatchExecutor
+Penghou.Luban.Execution.BatchPatchExecutor.BatchPatchExecutor(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Execution.IBatchPatchExecutionHost! host) -> void
+Penghou.Luban.Execution.BatchPatchExecutor.ExecuteAsync(Penghou.Luban.Resolution.CompiledPreviewDocument! document, Penghou.Luban.Resolution.ResolvedEffectPlan! plan, string! segmentId, Penghou.Luban.Execution.BatchPredecessor? predecessor = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Execution.BatchExecutionResult!>
+Penghou.Luban.Execution.BatchPredecessor
+Penghou.Luban.Execution.BatchPredecessor.BatchPredecessor(string! SegmentId, string! PlanIdentity) -> void
+Penghou.Luban.Execution.BatchPredecessor.PlanIdentity.get -> string!
+Penghou.Luban.Execution.BatchPredecessor.PlanIdentity.init -> void
+Penghou.Luban.Execution.BatchPredecessor.SegmentId.get -> string!
+Penghou.Luban.Execution.BatchPredecessor.SegmentId.init -> void
+Penghou.Luban.Execution.BatchRecoveryEntry
+Penghou.Luban.Execution.BatchRecoveryEntry.BatchRecoveryEntry(string! OperationId, string! NodeIdentity, Penghou.Luban.Execution.BatchRecoveryState State, Penghou.IO.Abstractions.MutationCompletion? Completion = null) -> void
+Penghou.Luban.Execution.BatchRecoveryEntry.Completion.get -> Penghou.IO.Abstractions.MutationCompletion?
+Penghou.Luban.Execution.BatchRecoveryEntry.Completion.init -> void
+Penghou.Luban.Execution.BatchRecoveryEntry.NodeIdentity.get -> string!
+Penghou.Luban.Execution.BatchRecoveryEntry.NodeIdentity.init -> void
+Penghou.Luban.Execution.BatchRecoveryEntry.OperationId.get -> string!
+Penghou.Luban.Execution.BatchRecoveryEntry.OperationId.init -> void
+Penghou.Luban.Execution.BatchRecoveryEntry.State.get -> Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.BatchRecoveryEntry.State.init -> void
+Penghou.Luban.Execution.BatchRecoverySnapshot
+Penghou.Luban.Execution.BatchRecoverySnapshot.BatchRecoverySnapshot(string! SegmentId, string! PlanIdentity, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.BatchRecoveryEntry!>! Entries) -> void
+Penghou.Luban.Execution.BatchRecoverySnapshot.Entries.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Execution.BatchRecoveryEntry!>!
+Penghou.Luban.Execution.BatchRecoverySnapshot.Entries.init -> void
+Penghou.Luban.Execution.BatchRecoverySnapshot.PlanIdentity.get -> string!
+Penghou.Luban.Execution.BatchRecoverySnapshot.PlanIdentity.init -> void
+Penghou.Luban.Execution.BatchRecoverySnapshot.SegmentId.get -> string!
+Penghou.Luban.Execution.BatchRecoverySnapshot.SegmentId.init -> void
+Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.BatchRecoveryState.Completed = 1 -> Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.BatchRecoveryState.NoMutation = 2 -> Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.BatchRecoveryState.NotStarted = 0 -> Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.BatchRecoveryState.Uncertain = 3 -> Penghou.Luban.Execution.BatchRecoveryState
+Penghou.Luban.Execution.IBatchPatchExecutionHost
+Penghou.Luban.Execution.IBatchPatchExecutionHost.AdmitAsync(Penghou.Luban.Execution.BatchAdmissionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageAuthorityDecision!>
+Penghou.Luban.Execution.IBatchPatchExecutionHost.AuthorizeResourceAsync(Penghou.Luban.Execution.BatchAdmissionRequest! request, Penghou.Luban.Execution.PatchResourceCheck! check, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.IO.Abstractions.ResourceAuthorizationDecision!>
+Penghou.Luban.Execution.IBatchPatchExecutionHost.CompleteAsync(Penghou.Luban.Execution.BatchAdmissionRequest! request, Penghou.Luban.Execution.PatchCompletion! completion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<bool>
+Penghou.Luban.Execution.IBatchPatchExecutionHost.InspectAsync(Penghou.Luban.Execution.BatchAdmissionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Execution.BatchRecoverySnapshot?>
+Penghou.Luban.Execution.IBatchPatchExecutionHost.StartAsync(Penghou.Luban.Execution.BatchAdmissionRequest! request, Penghou.Luban.Execution.PatchStartRequest! start, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.IO.Abstractions.MutationStartDecision!>
+Penghou.Luban.Execution.IPatchExecutionHost
+Penghou.Luban.Execution.IPatchExecutionHost.AdmitAsync(Penghou.Luban.Execution.PatchAdmissionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageAuthorityDecision!>
+Penghou.Luban.Execution.IPatchExecutionHost.AuthorizeResourceAsync(Penghou.Luban.Execution.PatchResourceCheck! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.IO.Abstractions.ResourceAuthorizationDecision!>
+Penghou.Luban.Execution.IPatchExecutionHost.CompleteAsync(Penghou.Luban.Execution.PatchCompletion! completion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<bool>
+Penghou.Luban.Execution.IPatchExecutionHost.StartAsync(Penghou.Luban.Execution.PatchStartRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.IO.Abstractions.MutationStartDecision!>
+Penghou.Luban.Execution.PatchAdmissionRequest
+Penghou.Luban.Execution.PatchAdmissionRequest.Document.get -> Penghou.Luban.Resolution.CompiledPreviewDocument!
+Penghou.Luban.Execution.PatchAdmissionRequest.Document.init -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.Invocation.get -> Penghou.IO.Abstractions.HostInvocation!
+Penghou.Luban.Execution.PatchAdmissionRequest.Invocation.init -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.OperationId.get -> string!
+Penghou.Luban.Execution.PatchAdmissionRequest.OperationId.init -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.PatchAdmissionRequest(string! OperationId, Penghou.Luban.Resolution.CompiledPreviewDocument! Document, Penghou.Luban.Resolution.ResolvedEffectPlan! Plan, string! WriterProfile, Penghou.IO.Abstractions.HostInvocation! Invocation, Penghou.IO.Abstractions.RequestIdentity ResourceRequestIdentity) -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.Plan.get -> Penghou.Luban.Resolution.ResolvedEffectPlan!
+Penghou.Luban.Execution.PatchAdmissionRequest.Plan.init -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.ResourceRequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity
+Penghou.Luban.Execution.PatchAdmissionRequest.ResourceRequestIdentity.init -> void
+Penghou.Luban.Execution.PatchAdmissionRequest.WriterProfile.get -> string!
+Penghou.Luban.Execution.PatchAdmissionRequest.WriterProfile.init -> void
+Penghou.Luban.Execution.PatchCompletion
+Penghou.Luban.Execution.PatchCompletion.Admission.get -> Penghou.Luban.Execution.PatchAdmissionRequest!
+Penghou.Luban.Execution.PatchCompletion.Admission.init -> void
+Penghou.Luban.Execution.PatchCompletion.Mutation.get -> Penghou.IO.Abstractions.MutationCompletion!
+Penghou.Luban.Execution.PatchCompletion.Mutation.init -> void
+Penghou.Luban.Execution.PatchCompletion.PatchCompletion(Penghou.Luban.Execution.PatchAdmissionRequest! Admission, Penghou.IO.Abstractions.MutationCompletion! Mutation) -> void
+Penghou.Luban.Execution.PatchExecutionResult
+Penghou.Luban.Execution.PatchExecutionResult.Failure.get -> Penghou.IO.Abstractions.ResourceFailureKind?
+Penghou.Luban.Execution.PatchExecutionResult.Failure.init -> void
+Penghou.Luban.Execution.PatchExecutionResult.PatchExecutionResult(Penghou.IO.Abstractions.ResourceFailureKind? Failure, Penghou.IO.Abstractions.ResourceVersion? Version = null) -> void
+Penghou.Luban.Execution.PatchExecutionResult.Succeeded.get -> bool
+Penghou.Luban.Execution.PatchExecutionResult.Version.get -> Penghou.IO.Abstractions.ResourceVersion?
+Penghou.Luban.Execution.PatchExecutionResult.Version.init -> void
+Penghou.Luban.Execution.PatchResourceCheck
+Penghou.Luban.Execution.PatchResourceCheck.Admission.get -> Penghou.Luban.Execution.PatchAdmissionRequest!
+Penghou.Luban.Execution.PatchResourceCheck.Admission.init -> void
+Penghou.Luban.Execution.PatchResourceCheck.PatchResourceCheck(Penghou.Luban.Execution.PatchAdmissionRequest! Admission, Penghou.IO.Abstractions.ResourceAuthorizationRequest! Resource) -> void
+Penghou.Luban.Execution.PatchResourceCheck.Resource.get -> Penghou.IO.Abstractions.ResourceAuthorizationRequest!
+Penghou.Luban.Execution.PatchResourceCheck.Resource.init -> void
+Penghou.Luban.Execution.PatchStartRequest
+Penghou.Luban.Execution.PatchStartRequest.Admission.get -> Penghou.Luban.Execution.PatchAdmissionRequest!
+Penghou.Luban.Execution.PatchStartRequest.Admission.init -> void
+Penghou.Luban.Execution.PatchStartRequest.Mutation.get -> Penghou.IO.Abstractions.MutationStartRequest!
+Penghou.Luban.Execution.PatchStartRequest.Mutation.init -> void
+Penghou.Luban.Execution.PatchStartRequest.PatchStartRequest(Penghou.Luban.Execution.PatchAdmissionRequest! Admission, Penghou.IO.Abstractions.MutationStartRequest! Mutation) -> void
+Penghou.Luban.Execution.SinglePatchExecutor
+Penghou.Luban.Execution.SinglePatchExecutor.ExecuteAsync(Penghou.Luban.Resolution.CompiledPreviewDocument! document, Penghou.Luban.Resolution.ResolvedEffectPlan! plan, string! operationId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Execution.PatchExecutionResult!>
+Penghou.Luban.Execution.SinglePatchExecutor.SinglePatchExecutor(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Execution.IPatchExecutionHost! host) -> void
+Penghou.Luban.FileEffectKind
+Penghou.Luban.FileEffectKind.FilesFind = 1 -> Penghou.Luban.FileEffectKind
+Penghou.Luban.FileEffectKind.FilesRead = 0 -> Penghou.Luban.FileEffectKind
+Penghou.Luban.FileEffectKind.FilesSearchText = 2 -> Penghou.Luban.FileEffectKind
+Penghou.Luban.FileEffectRuntime
+Penghou.Luban.FileEffectRuntime.FileEffectRuntime(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.IEffectAuthorizer! authorizer, Penghou.Luban.FileEffectRuntimeOptions? options = null) -> void
+Penghou.Luban.FileEffectRuntime.FindAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.FindRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.EffectResult<Penghou.Luban.FindResult!>!>
+Penghou.Luban.FileEffectRuntime.ReadAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.ReadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.EffectResult<Penghou.Luban.ReadResult!>!>
+Penghou.Luban.FileEffectRuntime.SearchTextAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.SearchTextRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.EffectResult<Penghou.Luban.SearchTextResult!>!>
+Penghou.Luban.FileEffectRuntimeOptions
+Penghou.Luban.FileEffectRuntimeOptions.FileEffectRuntimeOptions(System.TimeSpan OperationTimeout, int MaxReleaseDependencies = 100000) -> void
+Penghou.Luban.FileEffectRuntimeOptions.MaxReleaseDependencies.get -> int
+Penghou.Luban.FileEffectRuntimeOptions.MaxReleaseDependencies.init -> void
+Penghou.Luban.FileEffectRuntimeOptions.OperationTimeout.get -> System.TimeSpan
+Penghou.Luban.FileEffectRuntimeOptions.OperationTimeout.init -> void
+Penghou.Luban.FindRequest
+Penghou.Luban.FindRequest.Directory.get -> string!
+Penghou.Luban.FindRequest.Directory.init -> void
+Penghou.Luban.FindRequest.FindRequest(string! Directory = "", string! Pattern = "*", int MaxDepth = 16, int MaxEntries = 10000, int MaxMatches = 1000, int MaxOutputBytes = 262144) -> void
+Penghou.Luban.FindRequest.MaxDepth.get -> int
+Penghou.Luban.FindRequest.MaxDepth.init -> void
+Penghou.Luban.FindRequest.MaxEntries.get -> int
+Penghou.Luban.FindRequest.MaxEntries.init -> void
+Penghou.Luban.FindRequest.MaxMatches.get -> int
+Penghou.Luban.FindRequest.MaxMatches.init -> void
+Penghou.Luban.FindRequest.MaxOutputBytes.get -> int
+Penghou.Luban.FindRequest.MaxOutputBytes.init -> void
+Penghou.Luban.FindRequest.Pattern.get -> string!
+Penghou.Luban.FindRequest.Pattern.init -> void
+Penghou.Luban.FindResult
+Penghou.Luban.FindResult.FindResult(System.Collections.Generic.IReadOnlyList<string!>! Paths, bool Truncated) -> void
+Penghou.Luban.FindResult.Paths.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.FindResult.Paths.init -> void
+Penghou.Luban.FindResult.Truncated.get -> bool
+Penghou.Luban.FindResult.Truncated.init -> void
+Penghou.Luban.IEffectAuthorizer
+Penghou.Luban.IEffectAuthorizer.AuthorizeAsync(Penghou.Luban.EffectAuthorizationRequest! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Penghou.Luban.AuthorizationDecision>
+Penghou.Luban.Language.CompiledDocument
+Penghou.Luban.Language.CompiledDocument.Identity.get -> string!
+Penghou.Luban.Language.CompiledDocument.Limits.get -> Penghou.Luban.Language.LanguageExecutionLimits!
+Penghou.Luban.Language.CompiledDocument.Statements.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.CompiledNode!>!>!
+Penghou.Luban.Language.CompiledDocument.Versions.get -> Penghou.Luban.Language.LanguageVersions!
+Penghou.Luban.Language.CompiledDocument.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Language.CompiledNode
+Penghou.Luban.Language.CompiledNode.Descriptor.get -> string!
+Penghou.Luban.Language.CompiledNode.Identity.get -> string!
+Penghou.Luban.Language.CompiledNode.NodeIndex.get -> int
+Penghou.Luban.Language.CompiledNode.Output.get -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.CompiledNode.Stage.get -> Penghou.Luban.Language.LanguageStage!
+Penghou.Luban.Language.CompiledNode.StatementIndex.get -> int
+Penghou.Luban.Language.CountStage
+Penghou.Luban.Language.CountValue
+Penghou.Luban.Language.CountValue.Count.get -> int
+Penghou.Luban.Language.CountValue.Count.init -> void
+Penghou.Luban.Language.CountValue.CountValue(int Count) -> void
+Penghou.Luban.Language.DiffStage
+Penghou.Luban.Language.DiffStage.AfterPath.get -> string!
+Penghou.Luban.Language.DiffStage.AfterPath.init -> void
+Penghou.Luban.Language.DiffStage.BeforePath.get -> string!
+Penghou.Luban.Language.DiffStage.BeforePath.init -> void
+Penghou.Luban.Language.DiffStage.DiffStage(string! BeforePath, string! AfterPath, Penghou.Luban.Changes.TextChangeOptions? Options = null) -> void
+Penghou.Luban.Language.DiffStage.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Language.DiffStage.Options.init -> void
+Penghou.Luban.Language.DiffValue
+Penghou.Luban.Language.DiffValue.AfterByteLength.get -> int
+Penghou.Luban.Language.DiffValue.AfterByteLength.init -> void
+Penghou.Luban.Language.DiffValue.AfterPath.get -> string!
+Penghou.Luban.Language.DiffValue.AfterPath.init -> void
+Penghou.Luban.Language.DiffValue.AfterSha256.get -> string!
+Penghou.Luban.Language.DiffValue.AfterSha256.init -> void
+Penghou.Luban.Language.DiffValue.BeforeByteLength.get -> int
+Penghou.Luban.Language.DiffValue.BeforeByteLength.init -> void
+Penghou.Luban.Language.DiffValue.BeforePath.get -> string!
+Penghou.Luban.Language.DiffValue.BeforePath.init -> void
+Penghou.Luban.Language.DiffValue.BeforeSha256.get -> string!
+Penghou.Luban.Language.DiffValue.BeforeSha256.init -> void
+Penghou.Luban.Language.DiffValue.DiffValue(string! BeforePath, string! AfterPath, string! ProfileIdentity, string! BeforeSha256, int BeforeByteLength, string! AfterSha256, int AfterByteLength, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>! Edits, bool IsUntrustedCandidate = true) -> void
+Penghou.Luban.Language.DiffValue.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>!
+Penghou.Luban.Language.DiffValue.Edits.init -> void
+Penghou.Luban.Language.DiffValue.IsUntrustedCandidate.get -> bool
+Penghou.Luban.Language.DiffValue.IsUntrustedCandidate.init -> void
+Penghou.Luban.Language.DiffValue.ProfileIdentity.get -> string!
+Penghou.Luban.Language.DiffValue.ProfileIdentity.init -> void
+Penghou.Luban.Language.FileContentValue
+Penghou.Luban.Language.FileContentValue.ByteLength.get -> int
+Penghou.Luban.Language.FileContentValue.ByteLength.init -> void
+Penghou.Luban.Language.FileContentValue.Content.get -> string!
+Penghou.Luban.Language.FileContentValue.Content.init -> void
+Penghou.Luban.Language.FileContentValue.FileContentValue(string! RelativePath, string! Content, int ByteLength, string! Sha256) -> void
+Penghou.Luban.Language.FileContentValue.RelativePath.get -> string!
+Penghou.Luban.Language.FileContentValue.RelativePath.init -> void
+Penghou.Luban.Language.FileContentValue.Sha256.get -> string!
+Penghou.Luban.Language.FileContentValue.Sha256.init -> void
+Penghou.Luban.Language.FileReferenceValue
+Penghou.Luban.Language.FileReferenceValue.FileReferenceValue(string! RelativePath) -> void
+Penghou.Luban.Language.FileReferenceValue.RelativePath.get -> string!
+Penghou.Luban.Language.FileReferenceValue.RelativePath.init -> void
+Penghou.Luban.Language.FileWindowValue
+Penghou.Luban.Language.FileWindowValue.CompleteInput.get -> bool
+Penghou.Luban.Language.FileWindowValue.CompleteInput.init -> void
+Penghou.Luban.Language.FileWindowValue.CompleteWindow.get -> bool
+Penghou.Luban.Language.FileWindowValue.CompleteWindow.init -> void
+Penghou.Luban.Language.FileWindowValue.Content.get -> string!
+Penghou.Luban.Language.FileWindowValue.Content.init -> void
+Penghou.Luban.Language.FileWindowValue.FileWindowValue(string! RelativePath, string! Content, int StartLine, int RequestedLineCount, int ReturnedLineCount, bool CompleteInput, bool CompleteWindow, string! InputSha256, int InputByteLength) -> void
+Penghou.Luban.Language.FileWindowValue.InputByteLength.get -> int
+Penghou.Luban.Language.FileWindowValue.InputByteLength.init -> void
+Penghou.Luban.Language.FileWindowValue.InputSha256.get -> string!
+Penghou.Luban.Language.FileWindowValue.InputSha256.init -> void
+Penghou.Luban.Language.FileWindowValue.RelativePath.get -> string!
+Penghou.Luban.Language.FileWindowValue.RelativePath.init -> void
+Penghou.Luban.Language.FileWindowValue.RequestedLineCount.get -> int
+Penghou.Luban.Language.FileWindowValue.RequestedLineCount.init -> void
+Penghou.Luban.Language.FileWindowValue.ReturnedLineCount.get -> int
+Penghou.Luban.Language.FileWindowValue.ReturnedLineCount.init -> void
+Penghou.Luban.Language.FileWindowValue.StartLine.get -> int
+Penghou.Luban.Language.FileWindowValue.StartLine.init -> void
+Penghou.Luban.Language.FindStage
+Penghou.Luban.Language.FindStage.FindStage(string! Root, string! Pattern, Penghou.Luban.Language.TraversalLimits! Limits) -> void
+Penghou.Luban.Language.FindStage.Limits.get -> Penghou.Luban.Language.TraversalLimits!
+Penghou.Luban.Language.FindStage.Limits.init -> void
+Penghou.Luban.Language.FindStage.Pattern.get -> string!
+Penghou.Luban.Language.FindStage.Pattern.init -> void
+Penghou.Luban.Language.FindStage.Root.get -> string!
+Penghou.Luban.Language.FindStage.Root.init -> void
+Penghou.Luban.Language.ILanguageAuthorizer
+Penghou.Luban.Language.ILanguageAuthorizer.AuthorizeAsync(Penghou.Luban.Language.LanguageAuthorizationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageAuthorityDecision!>
+Penghou.Luban.Language.LanguageAuthorityDecision
+Penghou.Luban.Language.LanguageAuthorityDecision.LanguageAuthorityDecision(Penghou.Luban.Language.LanguageAuthorityStatus Status) -> void
+Penghou.Luban.Language.LanguageAuthorityDecision.Status.get -> Penghou.Luban.Language.LanguageAuthorityStatus
+Penghou.Luban.Language.LanguageAuthorityDecision.Status.init -> void
+Penghou.Luban.Language.LanguageAuthorityStatus
+Penghou.Luban.Language.LanguageAuthorityStatus.Deny = 1 -> Penghou.Luban.Language.LanguageAuthorityStatus
+Penghou.Luban.Language.LanguageAuthorityStatus.Permit = 2 -> Penghou.Luban.Language.LanguageAuthorityStatus
+Penghou.Luban.Language.LanguageAuthorityStatus.Unavailable = 0 -> Penghou.Luban.Language.LanguageAuthorityStatus
+Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationPhase.EffectStart = 1 -> Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationPhase.Preflight = 0 -> Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationPhase.Release = 3 -> Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationPhase.ResourceAccess = 2 -> Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationRequest
+Penghou.Luban.Language.LanguageAuthorizationRequest.Action.get -> Penghou.IO.Abstractions.ResourceAction?
+Penghou.Luban.Language.LanguageAuthorizationRequest.Action.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Descriptor.get -> string!
+Penghou.Luban.Language.LanguageAuthorizationRequest.Descriptor.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.DescriptorVersion.get -> string!
+Penghou.Luban.Language.LanguageAuthorizationRequest.DescriptorVersion.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.DocumentIdentity.get -> string!
+Penghou.Luban.Language.LanguageAuthorizationRequest.DocumentIdentity.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Invocation.get -> Penghou.Luban.EffectInvocation!
+Penghou.Luban.Language.LanguageAuthorizationRequest.Invocation.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.LanguageAuthorizationRequest(Penghou.Luban.EffectInvocation! Invocation, string! DocumentIdentity, string! NodeIdentity, string! Descriptor, string! DescriptorVersion, Penghou.Luban.Language.LanguageVersions! Versions, Penghou.IO.Abstractions.WorkspaceId Workspace, Penghou.Luban.Language.LanguageStage! Stage, Penghou.Luban.Language.LanguageAuthorizationPhase Phase, string? ResourcePath = null, Penghou.IO.Abstractions.ResourceAction? Action = null, Penghou.IO.Abstractions.RequestIdentity? ResourceRequestIdentity = null) -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.NodeIdentity.get -> string!
+Penghou.Luban.Language.LanguageAuthorizationRequest.NodeIdentity.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Phase.get -> Penghou.Luban.Language.LanguageAuthorizationPhase
+Penghou.Luban.Language.LanguageAuthorizationRequest.Phase.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.ResourcePath.get -> string?
+Penghou.Luban.Language.LanguageAuthorizationRequest.ResourcePath.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.ResourceRequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity?
+Penghou.Luban.Language.LanguageAuthorizationRequest.ResourceRequestIdentity.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Stage.get -> Penghou.Luban.Language.LanguageStage!
+Penghou.Luban.Language.LanguageAuthorizationRequest.Stage.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Versions.get -> Penghou.Luban.Language.LanguageVersions!
+Penghou.Luban.Language.LanguageAuthorizationRequest.Versions.init -> void
+Penghou.Luban.Language.LanguageAuthorizationRequest.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Language.LanguageAuthorizationRequest.Workspace.init -> void
+Penghou.Luban.Language.LanguageCommandDescription
+Penghou.Luban.Language.LanguageCommandDescription.Aliases.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.Language.LanguageCommandDescription.Aliases.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.HasResourceEffects.get -> bool
+Penghou.Luban.Language.LanguageCommandDescription.HasResourceEffects.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.InputTypes.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageValueKind>!
+Penghou.Luban.Language.LanguageCommandDescription.InputTypes.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.LanguageCommandDescription(string! Name, System.Collections.Generic.IReadOnlyList<string!>! Aliases, string! Syntax, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageValueKind>! InputTypes, Penghou.Luban.Language.LanguageValueKind? OutputType, System.Collections.Generic.IReadOnlyList<string!>! Options, bool HasResourceEffects) -> void
+Penghou.Luban.Language.LanguageCommandDescription.Name.get -> string!
+Penghou.Luban.Language.LanguageCommandDescription.Name.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.Options.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.Language.LanguageCommandDescription.Options.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.OutputType.get -> Penghou.Luban.Language.LanguageValueKind?
+Penghou.Luban.Language.LanguageCommandDescription.OutputType.init -> void
+Penghou.Luban.Language.LanguageCommandDescription.Syntax.get -> string!
+Penghou.Luban.Language.LanguageCommandDescription.Syntax.init -> void
+Penghou.Luban.Language.LanguageCompilation
+Penghou.Luban.Language.LanguageCompilation.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>!
+Penghou.Luban.Language.LanguageCompilation.Diagnostics.init -> void
+Penghou.Luban.Language.LanguageCompilation.Document.get -> Penghou.Luban.Language.CompiledDocument?
+Penghou.Luban.Language.LanguageCompilation.Document.init -> void
+Penghou.Luban.Language.LanguageCompilation.LanguageCompilation(Penghou.Luban.Language.CompiledDocument? Document, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>! Diagnostics) -> void
+Penghou.Luban.Language.LanguageCompilation.Succeeded.get -> bool
+Penghou.Luban.Language.LanguageCompiler
+Penghou.Luban.Language.LanguageCompilerOptions
+Penghou.Luban.Language.LanguageCompilerOptions.ExecutionLimits.get -> Penghou.Luban.Language.LanguageExecutionLimits?
+Penghou.Luban.Language.LanguageCompilerOptions.ExecutionLimits.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.LanguageCompilerOptions(int MaxSourceBytes = 65536, int MaxTokens = 4096, int MaxStatements = 64, int MaxNodes = 128, int MaxLiteralBytes = 8192, Penghou.Luban.Language.LanguageVersions? Versions = null, Penghou.Luban.Language.LanguageExecutionLimits? ExecutionLimits = null) -> void
+Penghou.Luban.Language.LanguageCompilerOptions.MaxLiteralBytes.get -> int
+Penghou.Luban.Language.LanguageCompilerOptions.MaxLiteralBytes.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.MaxNodes.get -> int
+Penghou.Luban.Language.LanguageCompilerOptions.MaxNodes.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.MaxSourceBytes.get -> int
+Penghou.Luban.Language.LanguageCompilerOptions.MaxSourceBytes.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.MaxStatements.get -> int
+Penghou.Luban.Language.LanguageCompilerOptions.MaxStatements.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.MaxTokens.get -> int
+Penghou.Luban.Language.LanguageCompilerOptions.MaxTokens.init -> void
+Penghou.Luban.Language.LanguageCompilerOptions.Versions.get -> Penghou.Luban.Language.LanguageVersions?
+Penghou.Luban.Language.LanguageCompilerOptions.Versions.init -> void
+Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.DepthLimit = 2 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.FileSizeLimit = 4 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.MatchLimit = 16 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.None = 0 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.OutputByteLimit = 32 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.ScanByteLimit = 8 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.TakeLimit = 64 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageCoverageReason.TraversalLimit = 1 -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageDiagnostic
+Penghou.Luban.Language.LanguageDiagnostic.Code.get -> string!
+Penghou.Luban.Language.LanguageDiagnostic.Code.init -> void
+Penghou.Luban.Language.LanguageDiagnostic.LanguageDiagnostic(string! Code, string! Message, int Offset = 0, int Length = 0) -> void
+Penghou.Luban.Language.LanguageDiagnostic.Length.get -> int
+Penghou.Luban.Language.LanguageDiagnostic.Length.init -> void
+Penghou.Luban.Language.LanguageDiagnostic.Message.get -> string!
+Penghou.Luban.Language.LanguageDiagnostic.Message.init -> void
+Penghou.Luban.Language.LanguageDiagnostic.Offset.get -> int
+Penghou.Luban.Language.LanguageDiagnostic.Offset.init -> void
+Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageEffectKind.Diff = 3 -> Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageEffectKind.Find = 1 -> Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageEffectKind.Merge = 4 -> Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageEffectKind.Read = 0 -> Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageEffectKind.Search = 2 -> Penghou.Luban.Language.LanguageEffectKind
+Penghou.Luban.Language.LanguageExecutionLimits
+Penghou.Luban.Language.LanguageExecutionLimits.LanguageExecutionLimits(int MaxResourceCalls = 100000, int MaxReadBytes = 16777216, int MaxIntermediateBytes = 4194304, int MaxOutputBytes = 4194304, int MaxValues = 10000, int TimeoutMilliseconds = 30000) -> void
+Penghou.Luban.Language.LanguageExecutionLimits.MaxIntermediateBytes.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.MaxIntermediateBytes.init -> void
+Penghou.Luban.Language.LanguageExecutionLimits.MaxOutputBytes.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.MaxOutputBytes.init -> void
+Penghou.Luban.Language.LanguageExecutionLimits.MaxReadBytes.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.MaxReadBytes.init -> void
+Penghou.Luban.Language.LanguageExecutionLimits.MaxResourceCalls.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.MaxResourceCalls.init -> void
+Penghou.Luban.Language.LanguageExecutionLimits.MaxValues.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.MaxValues.init -> void
+Penghou.Luban.Language.LanguageExecutionLimits.TimeoutMilliseconds.get -> int
+Penghou.Luban.Language.LanguageExecutionLimits.TimeoutMilliseconds.init -> void
+Penghou.Luban.Language.LanguageGlob
+Penghou.Luban.Language.LanguagePaths
+Penghou.Luban.Language.LanguageProfile
+Penghou.Luban.Language.LanguageReadiness
+Penghou.Luban.Language.LanguageReadiness.Diagnostic.get -> Penghou.Luban.Language.LanguageRunDiagnostic?
+Penghou.Luban.Language.LanguageReadiness.Diagnostic.init -> void
+Penghou.Luban.Language.LanguageReadiness.HasDynamicTargets.get -> bool
+Penghou.Luban.Language.LanguageReadiness.HasDynamicTargets.init -> void
+Penghou.Luban.Language.LanguageReadiness.LanguageReadiness(Penghou.Luban.Language.LanguageRunStatus Status, bool HasDynamicTargets, Penghou.Luban.Language.LanguageRunDiagnostic? Diagnostic = null) -> void
+Penghou.Luban.Language.LanguageReadiness.ReadyForKnownRequirements.get -> bool
+Penghou.Luban.Language.LanguageReadiness.Status.get -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageReadiness.Status.init -> void
+Penghou.Luban.Language.LanguageRunDiagnostic
+Penghou.Luban.Language.LanguageRunDiagnostic.Code.get -> string!
+Penghou.Luban.Language.LanguageRunDiagnostic.Code.init -> void
+Penghou.Luban.Language.LanguageRunDiagnostic.LanguageRunDiagnostic(string! Code, string? NodeIdentity = null, string? LimitName = null) -> void
+Penghou.Luban.Language.LanguageRunDiagnostic.LimitName.get -> string?
+Penghou.Luban.Language.LanguageRunDiagnostic.LimitName.init -> void
+Penghou.Luban.Language.LanguageRunDiagnostic.NodeIdentity.get -> string?
+Penghou.Luban.Language.LanguageRunDiagnostic.NodeIdentity.init -> void
+Penghou.Luban.Language.LanguageRunResult
+Penghou.Luban.Language.LanguageRunResult.Diagnostic.get -> Penghou.Luban.Language.LanguageRunDiagnostic?
+Penghou.Luban.Language.LanguageRunResult.Diagnostic.init -> void
+Penghou.Luban.Language.LanguageRunResult.LanguageRunResult(Penghou.Luban.Language.LanguageRunStatus Status, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageStatementResult!>? Statements = null, Penghou.Luban.Language.LanguageRunDiagnostic? Diagnostic = null) -> void
+Penghou.Luban.Language.LanguageRunResult.Statements.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageStatementResult!>?
+Penghou.Luban.Language.LanguageRunResult.Statements.init -> void
+Penghou.Luban.Language.LanguageRunResult.Status.get -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunResult.Status.init -> void
+Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.AccessDenied = 7 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.AuthorityDenied = 2 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.AuthorizationUnavailable = 3 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.Cancelled = 9 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.InvalidDocument = 1 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.LimitExceeded = 5 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.NotFound = 6 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.ProviderFailure = 8 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.Succeeded = 0 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRunStatus.UnsupportedProfile = 4 -> Penghou.Luban.Language.LanguageRunStatus
+Penghou.Luban.Language.LanguageRuntime
+Penghou.Luban.Language.LanguageRuntime.ExecuteAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.Language.CompiledDocument! document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageRunResult!>
+Penghou.Luban.Language.LanguageRuntime.LanguageRuntime(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Language.ILanguageAuthorizer! authorizer) -> void
+Penghou.Luban.Language.LanguageRuntime.PreflightAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.Language.CompiledDocument! document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageReadiness!>
+Penghou.Luban.Language.LanguageStage
+Penghou.Luban.Language.LanguageStatementResult
+Penghou.Luban.Language.LanguageStatementResult.AuthorizedViewComplete.get -> bool
+Penghou.Luban.Language.LanguageStatementResult.CoverageReasons.get -> Penghou.Luban.Language.LanguageCoverageReason
+Penghou.Luban.Language.LanguageStatementResult.CoverageReasons.init -> void
+Penghou.Luban.Language.LanguageStatementResult.LanguageStatementResult(System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageValue!>! Values, bool Truncated, Penghou.Luban.Language.LanguageCoverageReason CoverageReasons = Penghou.Luban.Language.LanguageCoverageReason.None) -> void
+Penghou.Luban.Language.LanguageStatementResult.Truncated.get -> bool
+Penghou.Luban.Language.LanguageStatementResult.Truncated.init -> void
+Penghou.Luban.Language.LanguageStatementResult.Values.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageValue!>!
+Penghou.Luban.Language.LanguageStatementResult.Values.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities
+Penghou.Luban.Language.LanguageToolCapabilities.Commands.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageCommandDescription!>!
+Penghou.Luban.Language.LanguageToolCapabilities.Commands.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.LanguageToolCapabilities(string! SchemaVersion, Penghou.Luban.Language.LanguageVersions! Versions, string! Platform, bool PlatformAvailable, Penghou.Luban.Language.LanguageExecutionLimits! Limits, int MaxSourceBytes, int MaxTokens, int MaxStatements, int MaxNodes, int MaxLiteralBytes, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageCommandDescription!>! Commands) -> void
+Penghou.Luban.Language.LanguageToolCapabilities.Limits.get -> Penghou.Luban.Language.LanguageExecutionLimits!
+Penghou.Luban.Language.LanguageToolCapabilities.Limits.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.MaxLiteralBytes.get -> int
+Penghou.Luban.Language.LanguageToolCapabilities.MaxLiteralBytes.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.MaxNodes.get -> int
+Penghou.Luban.Language.LanguageToolCapabilities.MaxNodes.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.MaxSourceBytes.get -> int
+Penghou.Luban.Language.LanguageToolCapabilities.MaxSourceBytes.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.MaxStatements.get -> int
+Penghou.Luban.Language.LanguageToolCapabilities.MaxStatements.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.MaxTokens.get -> int
+Penghou.Luban.Language.LanguageToolCapabilities.MaxTokens.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.Platform.get -> string!
+Penghou.Luban.Language.LanguageToolCapabilities.Platform.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.PlatformAvailable.get -> bool
+Penghou.Luban.Language.LanguageToolCapabilities.PlatformAvailable.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.SchemaVersion.get -> string!
+Penghou.Luban.Language.LanguageToolCapabilities.SchemaVersion.init -> void
+Penghou.Luban.Language.LanguageToolCapabilities.Versions.get -> Penghou.Luban.Language.LanguageVersions!
+Penghou.Luban.Language.LanguageToolCapabilities.Versions.init -> void
+Penghou.Luban.Language.LanguageToolResult
+Penghou.Luban.Language.LanguageToolResult.CompilationDiagnostics.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>!
+Penghou.Luban.Language.LanguageToolResult.CompilationDiagnostics.init -> void
+Penghou.Luban.Language.LanguageToolResult.DocumentIdentity.get -> string?
+Penghou.Luban.Language.LanguageToolResult.DocumentIdentity.init -> void
+Penghou.Luban.Language.LanguageToolResult.Execution.get -> Penghou.Luban.Language.LanguageRunResult?
+Penghou.Luban.Language.LanguageToolResult.Execution.init -> void
+Penghou.Luban.Language.LanguageToolResult.LanguageToolResult(string! SchemaVersion, Penghou.Luban.Language.LanguageToolStatus Status, string? DocumentIdentity, Penghou.Luban.Language.LanguageVersions! Versions, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>! CompilationDiagnostics, Penghou.Luban.Language.LanguageRunResult? Execution) -> void
+Penghou.Luban.Language.LanguageToolResult.SchemaVersion.get -> string!
+Penghou.Luban.Language.LanguageToolResult.SchemaVersion.init -> void
+Penghou.Luban.Language.LanguageToolResult.Status.get -> Penghou.Luban.Language.LanguageToolStatus
+Penghou.Luban.Language.LanguageToolResult.Status.init -> void
+Penghou.Luban.Language.LanguageToolResult.Versions.get -> Penghou.Luban.Language.LanguageVersions!
+Penghou.Luban.Language.LanguageToolResult.Versions.init -> void
+Penghou.Luban.Language.LanguageToolRuntime
+Penghou.Luban.Language.LanguageToolRuntime.Describe() -> Penghou.Luban.Language.LanguageToolCapabilities!
+Penghou.Luban.Language.LanguageToolRuntime.ExecuteAsync(string! source, Penghou.Luban.EffectInvocation! invocation, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageToolResult!>
+Penghou.Luban.Language.LanguageToolRuntime.LanguageToolRuntime(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Language.ILanguageAuthorizer! authorizer, Penghou.Luban.Language.LanguageCompilerOptions? options = null) -> void
+Penghou.Luban.Language.LanguageToolStatus
+Penghou.Luban.Language.LanguageToolStatus.ExecutionFailed = 2 -> Penghou.Luban.Language.LanguageToolStatus
+Penghou.Luban.Language.LanguageToolStatus.InvalidSource = 1 -> Penghou.Luban.Language.LanguageToolStatus
+Penghou.Luban.Language.LanguageToolStatus.Succeeded = 0 -> Penghou.Luban.Language.LanguageToolStatus
+Penghou.Luban.Language.LanguageValue
+Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.Count = 3 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.FileContent = 1 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.FileReference = 0 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.FileWindow = 7 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.SearchContextMatch = 8 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.SearchMatch = 2 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.TextDiff = 4 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.TextMerge = 5 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageValueKind.TextMergeConflict = 6 -> Penghou.Luban.Language.LanguageValueKind
+Penghou.Luban.Language.LanguageVersions
+Penghou.Luban.Language.LanguageVersions.Catalogue.get -> string!
+Penghou.Luban.Language.LanguageVersions.Catalogue.init -> void
+Penghou.Luban.Language.LanguageVersions.Ir.get -> string!
+Penghou.Luban.Language.LanguageVersions.Ir.init -> void
+Penghou.Luban.Language.LanguageVersions.Language.get -> string!
+Penghou.Luban.Language.LanguageVersions.Language.init -> void
+Penghou.Luban.Language.LanguageVersions.LanguageVersions(string! Language = "1", string! Ir = "1", string! Catalogue = "windows-read-v1", string! Provider = "local-windows-read-v1") -> void
+Penghou.Luban.Language.LanguageVersions.Provider.get -> string!
+Penghou.Luban.Language.LanguageVersions.Provider.init -> void
+Penghou.Luban.Language.MergeConflictValue
+Penghou.Luban.Language.MergeConflictValue.BasePath.get -> string!
+Penghou.Luban.Language.MergeConflictValue.BasePath.init -> void
+Penghou.Luban.Language.MergeConflictValue.Conflicts.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextMergeConflict!>!
+Penghou.Luban.Language.MergeConflictValue.Conflicts.init -> void
+Penghou.Luban.Language.MergeConflictValue.IsUntrustedCandidate.get -> bool
+Penghou.Luban.Language.MergeConflictValue.IsUntrustedCandidate.init -> void
+Penghou.Luban.Language.MergeConflictValue.MergeConflictValue(string! BasePath, string! OursPath, string! TheirsPath, string! ProfileIdentity, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextMergeConflict!>! Conflicts, bool IsUntrustedCandidate = true) -> void
+Penghou.Luban.Language.MergeConflictValue.OursPath.get -> string!
+Penghou.Luban.Language.MergeConflictValue.OursPath.init -> void
+Penghou.Luban.Language.MergeConflictValue.ProfileIdentity.get -> string!
+Penghou.Luban.Language.MergeConflictValue.ProfileIdentity.init -> void
+Penghou.Luban.Language.MergeConflictValue.TheirsPath.get -> string!
+Penghou.Luban.Language.MergeConflictValue.TheirsPath.init -> void
+Penghou.Luban.Language.MergeStage
+Penghou.Luban.Language.MergeStage.BasePath.get -> string!
+Penghou.Luban.Language.MergeStage.BasePath.init -> void
+Penghou.Luban.Language.MergeStage.MergeStage(string! BasePath, string! OursPath, string! TheirsPath, Penghou.Luban.Changes.TextChangeOptions? Options = null) -> void
+Penghou.Luban.Language.MergeStage.Options.get -> Penghou.Luban.Changes.TextChangeOptions?
+Penghou.Luban.Language.MergeStage.Options.init -> void
+Penghou.Luban.Language.MergeStage.OursPath.get -> string!
+Penghou.Luban.Language.MergeStage.OursPath.init -> void
+Penghou.Luban.Language.MergeStage.TheirsPath.get -> string!
+Penghou.Luban.Language.MergeStage.TheirsPath.init -> void
+Penghou.Luban.Language.MergeValue
+Penghou.Luban.Language.MergeValue.BaseByteLength.get -> int
+Penghou.Luban.Language.MergeValue.BaseByteLength.init -> void
+Penghou.Luban.Language.MergeValue.BasePath.get -> string!
+Penghou.Luban.Language.MergeValue.BasePath.init -> void
+Penghou.Luban.Language.MergeValue.BaseSha256.get -> string!
+Penghou.Luban.Language.MergeValue.BaseSha256.init -> void
+Penghou.Luban.Language.MergeValue.Edits.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>!
+Penghou.Luban.Language.MergeValue.Edits.init -> void
+Penghou.Luban.Language.MergeValue.IsUntrustedCandidate.get -> bool
+Penghou.Luban.Language.MergeValue.IsUntrustedCandidate.init -> void
+Penghou.Luban.Language.MergeValue.MergeValue(string! BasePath, string! OursPath, string! TheirsPath, string! TargetPath, string! ProfileIdentity, string! BaseSha256, int BaseByteLength, string! OursSha256, int OursByteLength, string! TheirsSha256, int TheirsByteLength, string! ProposedSha256, int ProposedByteLength, string! ProposedText, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextEdit!>! Edits, bool IsUntrustedCandidate = true) -> void
+Penghou.Luban.Language.MergeValue.OursByteLength.get -> int
+Penghou.Luban.Language.MergeValue.OursByteLength.init -> void
+Penghou.Luban.Language.MergeValue.OursPath.get -> string!
+Penghou.Luban.Language.MergeValue.OursPath.init -> void
+Penghou.Luban.Language.MergeValue.OursSha256.get -> string!
+Penghou.Luban.Language.MergeValue.OursSha256.init -> void
+Penghou.Luban.Language.MergeValue.ProfileIdentity.get -> string!
+Penghou.Luban.Language.MergeValue.ProfileIdentity.init -> void
+Penghou.Luban.Language.MergeValue.ProposedByteLength.get -> int
+Penghou.Luban.Language.MergeValue.ProposedByteLength.init -> void
+Penghou.Luban.Language.MergeValue.ProposedSha256.get -> string!
+Penghou.Luban.Language.MergeValue.ProposedSha256.init -> void
+Penghou.Luban.Language.MergeValue.ProposedText.get -> string!
+Penghou.Luban.Language.MergeValue.ProposedText.init -> void
+Penghou.Luban.Language.MergeValue.TargetPath.get -> string!
+Penghou.Luban.Language.MergeValue.TargetPath.init -> void
+Penghou.Luban.Language.MergeValue.TheirsByteLength.get -> int
+Penghou.Luban.Language.MergeValue.TheirsByteLength.init -> void
+Penghou.Luban.Language.MergeValue.TheirsPath.get -> string!
+Penghou.Luban.Language.MergeValue.TheirsPath.init -> void
+Penghou.Luban.Language.MergeValue.TheirsSha256.get -> string!
+Penghou.Luban.Language.MergeValue.TheirsSha256.init -> void
+Penghou.Luban.Language.ReadStage
+Penghou.Luban.Language.ReadStage.Deconstruct(out string? path, out int maxBytes) -> void
+Penghou.Luban.Language.ReadStage.LineCount.get -> int?
+Penghou.Luban.Language.ReadStage.LineCount.init -> void
+Penghou.Luban.Language.ReadStage.MaxBytes.get -> int
+Penghou.Luban.Language.ReadStage.MaxBytes.init -> void
+Penghou.Luban.Language.ReadStage.Path.get -> string?
+Penghou.Luban.Language.ReadStage.Path.init -> void
+Penghou.Luban.Language.ReadStage.ReadStage(string? Path, int MaxBytes = 1048576, int? StartLine = null, int? LineCount = null) -> void
+Penghou.Luban.Language.ReadStage.ReadStage(string? path, int maxBytes) -> void
+Penghou.Luban.Language.ReadStage.StartLine.get -> int?
+Penghou.Luban.Language.ReadStage.StartLine.init -> void
+Penghou.Luban.Language.SearchContextMatchValue
+Penghou.Luban.Language.SearchContextMatchValue.AfterContext.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.Language.SearchContextMatchValue.AfterContext.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.BeforeContext.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.Language.SearchContextMatchValue.BeforeContext.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.CompleteInput.get -> bool
+Penghou.Luban.Language.SearchContextMatchValue.CompleteInput.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.CompleteWindow.get -> bool
+Penghou.Luban.Language.SearchContextMatchValue.CompleteWindow.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.InputByteLength.get -> int
+Penghou.Luban.Language.SearchContextMatchValue.InputByteLength.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.InputSha256.get -> string!
+Penghou.Luban.Language.SearchContextMatchValue.InputSha256.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.Line.get -> string!
+Penghou.Luban.Language.SearchContextMatchValue.Line.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.LineNumber.get -> int
+Penghou.Luban.Language.SearchContextMatchValue.LineNumber.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.MatchLengthBytes.get -> int
+Penghou.Luban.Language.SearchContextMatchValue.MatchLengthBytes.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.MatchStartByte.get -> int
+Penghou.Luban.Language.SearchContextMatchValue.MatchStartByte.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.RelativePath.get -> string!
+Penghou.Luban.Language.SearchContextMatchValue.RelativePath.init -> void
+Penghou.Luban.Language.SearchContextMatchValue.SearchContextMatchValue(string! RelativePath, int LineNumber, string! Line, int MatchStartByte, int MatchLengthBytes, System.Collections.Generic.IReadOnlyList<string!>! BeforeContext, System.Collections.Generic.IReadOnlyList<string!>! AfterContext, bool CompleteInput, bool CompleteWindow, string! InputSha256, int InputByteLength) -> void
+Penghou.Luban.Language.SearchLimits
+Penghou.Luban.Language.SearchLimits.MaxBytesScanned.get -> int
+Penghou.Luban.Language.SearchLimits.MaxBytesScanned.init -> void
+Penghou.Luban.Language.SearchLimits.MaxDepth.get -> int
+Penghou.Luban.Language.SearchLimits.MaxDepth.init -> void
+Penghou.Luban.Language.SearchLimits.MaxEntries.get -> int
+Penghou.Luban.Language.SearchLimits.MaxEntries.init -> void
+Penghou.Luban.Language.SearchLimits.MaxFileBytes.get -> int
+Penghou.Luban.Language.SearchLimits.MaxFileBytes.init -> void
+Penghou.Luban.Language.SearchLimits.MaxMatches.get -> int
+Penghou.Luban.Language.SearchLimits.MaxMatches.init -> void
+Penghou.Luban.Language.SearchLimits.MaxOutputBytes.get -> int
+Penghou.Luban.Language.SearchLimits.MaxOutputBytes.init -> void
+Penghou.Luban.Language.SearchLimits.SearchLimits(int MaxDepth = 16, int MaxEntries = 10000, int MaxMatches = 1000, int MaxOutputBytes = 262144, int MaxFileBytes = 1048576, int MaxBytesScanned = 10485760) -> void
+Penghou.Luban.Language.SearchMatchValue
+Penghou.Luban.Language.SearchMatchValue.Line.get -> string!
+Penghou.Luban.Language.SearchMatchValue.Line.init -> void
+Penghou.Luban.Language.SearchMatchValue.LineNumber.get -> int
+Penghou.Luban.Language.SearchMatchValue.LineNumber.init -> void
+Penghou.Luban.Language.SearchMatchValue.RelativePath.get -> string!
+Penghou.Luban.Language.SearchMatchValue.RelativePath.init -> void
+Penghou.Luban.Language.SearchMatchValue.SearchMatchValue(string! RelativePath, int LineNumber, string! Line) -> void
+Penghou.Luban.Language.SearchStage
+Penghou.Luban.Language.SearchStage.ContextLines.get -> int
+Penghou.Luban.Language.SearchStage.ContextLines.init -> void
+Penghou.Luban.Language.SearchStage.Deconstruct(out string! query, out string? root, out string! include, out string? exclude, out Penghou.Luban.Language.SearchLimits! limits) -> void
+Penghou.Luban.Language.SearchStage.Exclude.get -> string?
+Penghou.Luban.Language.SearchStage.Exclude.init -> void
+Penghou.Luban.Language.SearchStage.Include.get -> string!
+Penghou.Luban.Language.SearchStage.Include.init -> void
+Penghou.Luban.Language.SearchStage.Limits.get -> Penghou.Luban.Language.SearchLimits!
+Penghou.Luban.Language.SearchStage.Limits.init -> void
+Penghou.Luban.Language.SearchStage.Query.get -> string!
+Penghou.Luban.Language.SearchStage.Query.init -> void
+Penghou.Luban.Language.SearchStage.Root.get -> string?
+Penghou.Luban.Language.SearchStage.Root.init -> void
+Penghou.Luban.Language.SearchStage.SearchStage(string! query, string? root, string! include, string? exclude, Penghou.Luban.Language.SearchLimits! limits) -> void
+Penghou.Luban.Language.SearchStage.SearchStage(string! Query, string? Root, string! Include, string? Exclude, Penghou.Luban.Language.SearchLimits! Limits, int ContextLines = 0) -> void
+Penghou.Luban.Language.TakeStage
+Penghou.Luban.Language.TakeStage.Count.get -> int
+Penghou.Luban.Language.TakeStage.Count.init -> void
+Penghou.Luban.Language.TakeStage.TakeStage(int Count) -> void
+Penghou.Luban.Language.TraversalLimits
+Penghou.Luban.Language.TraversalLimits.MaxDepth.get -> int
+Penghou.Luban.Language.TraversalLimits.MaxDepth.init -> void
+Penghou.Luban.Language.TraversalLimits.MaxEntries.get -> int
+Penghou.Luban.Language.TraversalLimits.MaxEntries.init -> void
+Penghou.Luban.Language.TraversalLimits.MaxMatches.get -> int
+Penghou.Luban.Language.TraversalLimits.MaxMatches.init -> void
+Penghou.Luban.Language.TraversalLimits.MaxOutputBytes.get -> int
+Penghou.Luban.Language.TraversalLimits.MaxOutputBytes.init -> void
+Penghou.Luban.Language.TraversalLimits.TraversalLimits(int MaxDepth = 16, int MaxEntries = 10000, int MaxMatches = 1000, int MaxOutputBytes = 262144) -> void
+Penghou.Luban.ReadRequest
+Penghou.Luban.ReadRequest.MaxBytes.get -> int
+Penghou.Luban.ReadRequest.MaxBytes.init -> void
+Penghou.Luban.ReadRequest.ReadRequest(string! RelativePath, int MaxBytes = 1048576) -> void
+Penghou.Luban.ReadRequest.RelativePath.get -> string!
+Penghou.Luban.ReadRequest.RelativePath.init -> void
+Penghou.Luban.ReadResult
+Penghou.Luban.ReadResult.ByteLength.get -> int
+Penghou.Luban.ReadResult.ByteLength.init -> void
+Penghou.Luban.ReadResult.Content.get -> string!
+Penghou.Luban.ReadResult.Content.init -> void
+Penghou.Luban.ReadResult.ReadResult(string! RelativePath, string! Content, int ByteLength, string! Sha256) -> void
+Penghou.Luban.ReadResult.RelativePath.get -> string!
+Penghou.Luban.ReadResult.RelativePath.init -> void
+Penghou.Luban.ReadResult.Sha256.get -> string!
+Penghou.Luban.ReadResult.Sha256.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch
+Penghou.Luban.Resolution.CapturedFilePatch.CapturedFilePatch(string! RelativePath, Penghou.IO.Abstractions.ResourceVersion OriginalVersion, string! OriginalSha256, int OriginalByteLength, string! ProposedSha256, int ProposedByteLength, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>! Patches, Penghou.Luban.Resolution.ImmutableBytes! OriginalContent, Penghou.Luban.Resolution.ImmutableBytes! ProposedContent) -> void
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalByteLength.get -> int
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalByteLength.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalContent.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalContent.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalSha256.get -> string!
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalSha256.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalVersion.get -> Penghou.IO.Abstractions.ResourceVersion
+Penghou.Luban.Resolution.CapturedFilePatch.OriginalVersion.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.Patches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>!
+Penghou.Luban.Resolution.CapturedFilePatch.Patches.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedByteLength.get -> int
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedByteLength.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedContent.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedContent.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedSha256.get -> string!
+Penghou.Luban.Resolution.CapturedFilePatch.ProposedSha256.init -> void
+Penghou.Luban.Resolution.CapturedFilePatch.RelativePath.get -> string!
+Penghou.Luban.Resolution.CapturedFilePatch.RelativePath.init -> void
+Penghou.Luban.Resolution.CompiledPreviewDocument
+Penghou.Luban.Resolution.CompiledPreviewDocument.Identity.get -> string!
+Penghou.Luban.Resolution.CompiledPreviewDocument.Limits.get -> Penghou.Luban.Resolution.PreviewLimits!
+Penghou.Luban.Resolution.CompiledPreviewDocument.Nodes.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.CompiledPreviewNode!>!
+Penghou.Luban.Resolution.CompiledPreviewDocument.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Resolution.CompiledPreviewNode
+Penghou.Luban.Resolution.CompiledPreviewNode.Descriptor.get -> string!
+Penghou.Luban.Resolution.CompiledPreviewNode.Identity.get -> string!
+Penghou.Luban.Resolution.CompiledPreviewNode.Index.get -> int
+Penghou.Luban.Resolution.CompiledPreviewNode.Operation.get -> Penghou.Luban.Resolution.PreviewOperation!
+Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredTool.Build = 0 -> Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredTool.GitCommit = 2 -> Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredTool.Test = 1 -> Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredToolOperation
+Penghou.Luban.Resolution.DeferredToolOperation.DeferredToolOperation(Penghou.Luban.Resolution.DeferredTool Tool, string! Root) -> void
+Penghou.Luban.Resolution.DeferredToolOperation.Root.get -> string!
+Penghou.Luban.Resolution.DeferredToolOperation.Root.init -> void
+Penghou.Luban.Resolution.DeferredToolOperation.Tool.get -> Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredToolOperation.Tool.init -> void
+Penghou.Luban.Resolution.DeferredToolStage
+Penghou.Luban.Resolution.DeferredToolStage.DeferredToolStage(Penghou.Luban.Resolution.DeferredTool Tool, string! Root) -> void
+Penghou.Luban.Resolution.DeferredToolStage.Root.get -> string!
+Penghou.Luban.Resolution.DeferredToolStage.Root.init -> void
+Penghou.Luban.Resolution.DeferredToolStage.Tool.get -> Penghou.Luban.Resolution.DeferredTool
+Penghou.Luban.Resolution.DeferredToolStage.Tool.init -> void
+Penghou.Luban.Resolution.ExactPatchOperation
+Penghou.Luban.Resolution.ExactPatchOperation.ExactPatchOperation(string! Path, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>! Patches, Penghou.IO.Abstractions.ResourceVersion? ExpectedVersion) -> void
+Penghou.Luban.Resolution.ExactPatchOperation.ExpectedVersion.get -> Penghou.IO.Abstractions.ResourceVersion?
+Penghou.Luban.Resolution.ExactPatchOperation.ExpectedVersion.init -> void
+Penghou.Luban.Resolution.ExactPatchOperation.Patches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>!
+Penghou.Luban.Resolution.ExactPatchOperation.Patches.init -> void
+Penghou.Luban.Resolution.ExactPatchOperation.Path.get -> string!
+Penghou.Luban.Resolution.ExactPatchOperation.Path.init -> void
+Penghou.Luban.Resolution.FilePatchStage
+Penghou.Luban.Resolution.FilePatchStage.ExpectedVersion.get -> Penghou.IO.Abstractions.ResourceVersion?
+Penghou.Luban.Resolution.FilePatchStage.ExpectedVersion.init -> void
+Penghou.Luban.Resolution.FilePatchStage.FilePatchStage(string! Path, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>! Patches, Penghou.IO.Abstractions.ResourceVersion? ExpectedVersion = null) -> void
+Penghou.Luban.Resolution.FilePatchStage.Patches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>!
+Penghou.Luban.Resolution.FilePatchStage.Patches.init -> void
+Penghou.Luban.Resolution.FilePatchStage.Path.get -> string!
+Penghou.Luban.Resolution.FilePatchStage.Path.init -> void
+Penghou.Luban.Resolution.FrozenTextPatch
+Penghou.Luban.Resolution.FrozenTextPatch.DeleteLength.get -> int
+Penghou.Luban.Resolution.FrozenTextPatch.DeleteLength.init -> void
+Penghou.Luban.Resolution.FrozenTextPatch.FrozenTextPatch(int StartOffset, int DeleteLength, Penghou.Luban.Resolution.ImmutableBytes! ReplacementUtf8) -> void
+Penghou.Luban.Resolution.FrozenTextPatch.ReplacementUtf8.get -> Penghou.Luban.Resolution.ImmutableBytes!
+Penghou.Luban.Resolution.FrozenTextPatch.ReplacementUtf8.init -> void
+Penghou.Luban.Resolution.FrozenTextPatch.StartOffset.get -> int
+Penghou.Luban.Resolution.FrozenTextPatch.StartOffset.init -> void
+Penghou.Luban.Resolution.GlobPatchStage
+Penghou.Luban.Resolution.GlobPatchStage.GlobPatchStage(string! Root, string! Pattern, Penghou.Luban.Resolution.PreviewSelection Selection, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>! Patches, Penghou.Luban.Language.TraversalLimits! Limits) -> void
+Penghou.Luban.Resolution.GlobPatchStage.Limits.get -> Penghou.Luban.Language.TraversalLimits!
+Penghou.Luban.Resolution.GlobPatchStage.Limits.init -> void
+Penghou.Luban.Resolution.GlobPatchStage.Patches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>!
+Penghou.Luban.Resolution.GlobPatchStage.Patches.init -> void
+Penghou.Luban.Resolution.GlobPatchStage.Pattern.get -> string!
+Penghou.Luban.Resolution.GlobPatchStage.Pattern.init -> void
+Penghou.Luban.Resolution.GlobPatchStage.Root.get -> string!
+Penghou.Luban.Resolution.GlobPatchStage.Root.init -> void
+Penghou.Luban.Resolution.GlobPatchStage.Selection.get -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.GlobPatchStage.Selection.init -> void
+Penghou.Luban.Resolution.ImmutableBytes
+Penghou.Luban.Resolution.ImmutableBytes.Length.get -> int
+Penghou.Luban.Resolution.ImmutableBytes.Sha256.get -> string!
+Penghou.Luban.Resolution.ImmutableBytes.ToArray() -> byte[]!
+Penghou.Luban.Resolution.IPreviewAuthorizer
+Penghou.Luban.Resolution.IPreviewAuthorizer.AuthorizeAsync(Penghou.Luban.Resolution.PreviewAuthorizationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Language.LanguageAuthorityDecision!>
+Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationPhase.Preflight = 0 -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationPhase.ProposalAdmission = 3 -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationPhase.Release = 4 -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationPhase.ResourceAccess = 2 -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationPhase.TargetAdmission = 1 -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationRequest
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Action.get -> Penghou.IO.Abstractions.ResourceAction?
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Action.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.CatalogueVersion.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.CatalogueVersion.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Descriptor.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Descriptor.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.DocumentIdentity.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.DocumentIdentity.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Invocation.get -> Penghou.Luban.EffectInvocation!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Invocation.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.NodeIdentity.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.NodeIdentity.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Operation.get -> Penghou.Luban.Resolution.PreviewOperation!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Operation.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Phase.get -> Penghou.Luban.Resolution.PreviewAuthorizationPhase
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Phase.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.PlanIdentity.get -> string?
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.PlanIdentity.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.PreviewAuthorizationRequest(Penghou.Luban.EffectInvocation! Invocation, string! DocumentIdentity, string! NodeIdentity, string! Descriptor, string! SchemaVersion, string! CatalogueVersion, string! ProviderProfile, Penghou.IO.Abstractions.WorkspaceId Workspace, Penghou.Luban.Resolution.PreviewOperation! Operation, Penghou.Luban.Resolution.PreviewAuthorizationPhase Phase, string? ResourcePath = null, Penghou.IO.Abstractions.ResourceAction? Action = null, Penghou.IO.Abstractions.RequestIdentity? ResourceRequestIdentity = null, Penghou.Luban.Resolution.CapturedFilePatch? Proposal = null, string? PlanIdentity = null) -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Proposal.get -> Penghou.Luban.Resolution.CapturedFilePatch?
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Proposal.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ProviderProfile.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ProviderProfile.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ResourcePath.get -> string?
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ResourcePath.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ResourceRequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity?
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.ResourceRequestIdentity.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.SchemaVersion.get -> string!
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.SchemaVersion.init -> void
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Resolution.PreviewAuthorizationRequest.Workspace.init -> void
+Penghou.Luban.Resolution.PreviewCompilation
+Penghou.Luban.Resolution.PreviewCompilation.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>!
+Penghou.Luban.Resolution.PreviewCompilation.Diagnostics.init -> void
+Penghou.Luban.Resolution.PreviewCompilation.Document.get -> Penghou.Luban.Resolution.CompiledPreviewDocument?
+Penghou.Luban.Resolution.PreviewCompilation.Document.init -> void
+Penghou.Luban.Resolution.PreviewCompilation.PreviewCompilation(Penghou.Luban.Resolution.CompiledPreviewDocument? Document, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageDiagnostic!>! Diagnostics) -> void
+Penghou.Luban.Resolution.PreviewCompilation.Succeeded.get -> bool
+Penghou.Luban.Resolution.PreviewCompiler
+Penghou.Luban.Resolution.PreviewLimits
+Penghou.Luban.Resolution.PreviewLimits.MaxFileBytes.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxFileBytes.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxNodes.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxNodes.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxPatchCount.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxPatchCount.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxPlanBytes.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxPlanBytes.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxReadBytes.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxReadBytes.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxReplacementBytes.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxReplacementBytes.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxResourceCalls.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxResourceCalls.init -> void
+Penghou.Luban.Resolution.PreviewLimits.MaxTargets.get -> int
+Penghou.Luban.Resolution.PreviewLimits.MaxTargets.init -> void
+Penghou.Luban.Resolution.PreviewLimits.PreviewLimits(int MaxNodes = 64, int MaxTargets = 1000, int MaxReadBytes = 16777216, int MaxFileBytes = 1048576, int MaxReplacementBytes = 1048576, int MaxPatchCount = 128, int MaxPlanBytes = 4194304, int MaxResourceCalls = 100000, int TimeoutMilliseconds = 30000) -> void
+Penghou.Luban.Resolution.PreviewLimits.TimeoutMilliseconds.get -> int
+Penghou.Luban.Resolution.PreviewLimits.TimeoutMilliseconds.init -> void
+Penghou.Luban.Resolution.PreviewNodeState
+Penghou.Luban.Resolution.PreviewNodeState.Proposed = 0 -> Penghou.Luban.Resolution.PreviewNodeState
+Penghou.Luban.Resolution.PreviewNodeState.Unresolved = 1 -> Penghou.Luban.Resolution.PreviewNodeState
+Penghou.Luban.Resolution.PreviewObservation
+Penghou.Luban.Resolution.PreviewObservation.Action.get -> Penghou.IO.Abstractions.ResourceAction
+Penghou.Luban.Resolution.PreviewObservation.Action.init -> void
+Penghou.Luban.Resolution.PreviewObservation.ByteLength.get -> int
+Penghou.Luban.Resolution.PreviewObservation.ByteLength.init -> void
+Penghou.Luban.Resolution.PreviewObservation.Digest.get -> string!
+Penghou.Luban.Resolution.PreviewObservation.Digest.init -> void
+Penghou.Luban.Resolution.PreviewObservation.IsComplete.get -> bool
+Penghou.Luban.Resolution.PreviewObservation.IsComplete.init -> void
+Penghou.Luban.Resolution.PreviewObservation.NodeIdentity.get -> string!
+Penghou.Luban.Resolution.PreviewObservation.NodeIdentity.init -> void
+Penghou.Luban.Resolution.PreviewObservation.PreviewObservation(string! NodeIdentity, string! RelativePath, Penghou.IO.Abstractions.ResourceAction Action, Penghou.IO.Abstractions.RequestIdentity RequestIdentity, Penghou.IO.Abstractions.ResourceVersion? Version, string! Digest, int ByteLength, bool IsComplete) -> void
+Penghou.Luban.Resolution.PreviewObservation.RelativePath.get -> string!
+Penghou.Luban.Resolution.PreviewObservation.RelativePath.init -> void
+Penghou.Luban.Resolution.PreviewObservation.RequestIdentity.get -> Penghou.IO.Abstractions.RequestIdentity
+Penghou.Luban.Resolution.PreviewObservation.RequestIdentity.init -> void
+Penghou.Luban.Resolution.PreviewObservation.Version.get -> Penghou.IO.Abstractions.ResourceVersion?
+Penghou.Luban.Resolution.PreviewObservation.Version.init -> void
+Penghou.Luban.Resolution.PreviewOperation
+Penghou.Luban.Resolution.PreviewProfile
+Penghou.Luban.Resolution.PreviewReadiness
+Penghou.Luban.Resolution.PreviewReadiness.HasDynamicTargets.get -> bool
+Penghou.Luban.Resolution.PreviewReadiness.HasDynamicTargets.init -> void
+Penghou.Luban.Resolution.PreviewReadiness.PreviewReadiness(Penghou.Luban.Resolution.PreviewRunStatus Status, bool HasDynamicTargets) -> void
+Penghou.Luban.Resolution.PreviewReadiness.ReadyForKnownRequirements.get -> bool
+Penghou.Luban.Resolution.PreviewReadiness.Status.get -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewReadiness.Status.init -> void
+Penghou.Luban.Resolution.PreviewRunResult
+Penghou.Luban.Resolution.PreviewRunResult.Plan.get -> Penghou.Luban.Resolution.ResolvedEffectPlan?
+Penghou.Luban.Resolution.PreviewRunResult.Plan.init -> void
+Penghou.Luban.Resolution.PreviewRunResult.PreviewRunResult(Penghou.Luban.Resolution.PreviewRunStatus Status, Penghou.Luban.Resolution.ResolvedEffectPlan? Plan = null) -> void
+Penghou.Luban.Resolution.PreviewRunResult.Status.get -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunResult.Status.init -> void
+Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.AccessDenied = 8 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.AuthorityDenied = 3 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.AuthorizationUnavailable = 4 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.Incomplete = 1 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.InvalidDocument = 2 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.InvalidPatch = 10 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.LimitExceeded = 6 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.NotFound = 7 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.ProviderFailure = 11 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.StaleObservation = 9 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.Succeeded = 0 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRunStatus.UnsupportedProfile = 5 -> Penghou.Luban.Resolution.PreviewRunStatus
+Penghou.Luban.Resolution.PreviewRuntime
+Penghou.Luban.Resolution.PreviewRuntime.PreflightAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.Resolution.CompiledPreviewDocument! document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Resolution.PreviewReadiness!>
+Penghou.Luban.Resolution.PreviewRuntime.PreviewRuntime(Penghou.Luban.WorkspaceReference! workspace, Penghou.IO.Abstractions.IWorkspaceProvider! provider, Penghou.Luban.Resolution.IPreviewAuthorizer! authorizer) -> void
+Penghou.Luban.Resolution.PreviewRuntime.WhatIfAsync(Penghou.Luban.EffectInvocation! invocation, Penghou.Luban.Resolution.CompiledPreviewDocument! document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Penghou.Luban.Resolution.PreviewRunResult!>
+Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.PreviewSelection.AllMatches = 2 -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.PreviewSelection.AuthorizedView = 1 -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.PreviewSelection.Unspecified = 0 -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.PreviewStage
+Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.AllMatchCoverageUnavailable = 2 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.DependsOnOpaqueEffect = 1 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.DependsOnUnresolvedEffect = 5 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.IncompleteSelection = 3 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.OpaqueEffect = 0 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.PreviewUnresolvedReason.RepeatedTarget = 4 -> Penghou.Luban.Resolution.PreviewUnresolvedReason
+Penghou.Luban.Resolution.ResolvedEffectPlan
+Penghou.Luban.Resolution.ResolvedEffectPlan.CanCommit.get -> bool
+Penghou.Luban.Resolution.ResolvedEffectPlan.CaptureComplete.get -> bool
+Penghou.Luban.Resolution.ResolvedEffectPlan.CatalogueVersion.get -> string!
+Penghou.Luban.Resolution.ResolvedEffectPlan.DocumentIdentity.get -> string!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Identity.get -> string!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Invocation.get -> Penghou.Luban.EffectInvocation!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Limits.get -> Penghou.Luban.Resolution.PreviewLimits!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Nodes.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.ResolvedPreviewNode!>!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Observations.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.PreviewObservation!>!
+Penghou.Luban.Resolution.ResolvedEffectPlan.ProviderProfile.get -> string!
+Penghou.Luban.Resolution.ResolvedEffectPlan.SchemaVersion.get -> string!
+Penghou.Luban.Resolution.ResolvedEffectPlan.Workspace.get -> Penghou.IO.Abstractions.WorkspaceId
+Penghou.Luban.Resolution.ResolvedPreviewNode
+Penghou.Luban.Resolution.ResolvedPreviewNode.Dependencies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Penghou.Luban.Resolution.ResolvedPreviewNode.Dependencies.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.Descriptor.get -> string!
+Penghou.Luban.Resolution.ResolvedPreviewNode.Descriptor.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.NodeIdentity.get -> string!
+Penghou.Luban.Resolution.ResolvedPreviewNode.NodeIdentity.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.Proposals.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.CapturedFilePatch!>!
+Penghou.Luban.Resolution.ResolvedPreviewNode.Proposals.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.ResolvedPreviewNode(string! NodeIdentity, string! Descriptor, Penghou.Luban.Resolution.PreviewNodeState State, Penghou.Luban.Resolution.PreviewSelection Selection, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.CapturedFilePatch!>! Proposals, System.Collections.Generic.IReadOnlyList<string!>! Dependencies, Penghou.Luban.Resolution.PreviewUnresolvedReason? UnresolvedReason) -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.Selection.get -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.ResolvedPreviewNode.Selection.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.State.get -> Penghou.Luban.Resolution.PreviewNodeState
+Penghou.Luban.Resolution.ResolvedPreviewNode.State.init -> void
+Penghou.Luban.Resolution.ResolvedPreviewNode.UnresolvedReason.get -> Penghou.Luban.Resolution.PreviewUnresolvedReason?
+Penghou.Luban.Resolution.ResolvedPreviewNode.UnresolvedReason.init -> void
+Penghou.Luban.Resolution.SelectedPatchOperation
+Penghou.Luban.Resolution.SelectedPatchOperation.Limits.get -> Penghou.Luban.Language.TraversalLimits!
+Penghou.Luban.Resolution.SelectedPatchOperation.Limits.init -> void
+Penghou.Luban.Resolution.SelectedPatchOperation.Patches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>!
+Penghou.Luban.Resolution.SelectedPatchOperation.Patches.init -> void
+Penghou.Luban.Resolution.SelectedPatchOperation.Pattern.get -> string!
+Penghou.Luban.Resolution.SelectedPatchOperation.Pattern.init -> void
+Penghou.Luban.Resolution.SelectedPatchOperation.Root.get -> string!
+Penghou.Luban.Resolution.SelectedPatchOperation.Root.init -> void
+Penghou.Luban.Resolution.SelectedPatchOperation.SelectedPatchOperation(string! Root, string! Pattern, Penghou.Luban.Resolution.PreviewSelection Selection, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.FrozenTextPatch!>! Patches, Penghou.Luban.Language.TraversalLimits! Limits) -> void
+Penghou.Luban.Resolution.SelectedPatchOperation.Selection.get -> Penghou.Luban.Resolution.PreviewSelection
+Penghou.Luban.Resolution.SelectedPatchOperation.Selection.init -> void
+Penghou.Luban.SearchTextRequest
+Penghou.Luban.SearchTextRequest.Directory.get -> string!
+Penghou.Luban.SearchTextRequest.Directory.init -> void
+Penghou.Luban.SearchTextRequest.MaxBytesScanned.get -> int
+Penghou.Luban.SearchTextRequest.MaxBytesScanned.init -> void
+Penghou.Luban.SearchTextRequest.MaxDepth.get -> int
+Penghou.Luban.SearchTextRequest.MaxDepth.init -> void
+Penghou.Luban.SearchTextRequest.MaxEntries.get -> int
+Penghou.Luban.SearchTextRequest.MaxEntries.init -> void
+Penghou.Luban.SearchTextRequest.MaxFileBytes.get -> int
+Penghou.Luban.SearchTextRequest.MaxFileBytes.init -> void
+Penghou.Luban.SearchTextRequest.MaxMatches.get -> int
+Penghou.Luban.SearchTextRequest.MaxMatches.init -> void
+Penghou.Luban.SearchTextRequest.MaxOutputBytes.get -> int
+Penghou.Luban.SearchTextRequest.MaxOutputBytes.init -> void
+Penghou.Luban.SearchTextRequest.Pattern.get -> string!
+Penghou.Luban.SearchTextRequest.Pattern.init -> void
+Penghou.Luban.SearchTextRequest.SearchTextRequest(string! Directory, string! Pattern, string! Text, int MaxDepth = 16, int MaxEntries = 10000, int MaxFileBytes = 1048576, int MaxBytesScanned = 10485760, int MaxMatches = 1000, int MaxOutputBytes = 262144) -> void
+Penghou.Luban.SearchTextRequest.Text.get -> string!
+Penghou.Luban.SearchTextRequest.Text.init -> void
+Penghou.Luban.SearchTextResult
+Penghou.Luban.SearchTextResult.BytesScanned.get -> int
+Penghou.Luban.SearchTextResult.BytesScanned.init -> void
+Penghou.Luban.SearchTextResult.Matches.get -> System.Collections.Generic.IReadOnlyList<Penghou.Luban.TextMatch!>!
+Penghou.Luban.SearchTextResult.Matches.init -> void
+Penghou.Luban.SearchTextResult.SearchTextResult(System.Collections.Generic.IReadOnlyList<Penghou.Luban.TextMatch!>! Matches, bool Truncated, int BytesScanned) -> void
+Penghou.Luban.SearchTextResult.Truncated.get -> bool
+Penghou.Luban.SearchTextResult.Truncated.init -> void
+Penghou.Luban.TextMatch
+Penghou.Luban.TextMatch.Line.get -> string!
+Penghou.Luban.TextMatch.Line.init -> void
+Penghou.Luban.TextMatch.LineNumber.get -> int
+Penghou.Luban.TextMatch.LineNumber.init -> void
+Penghou.Luban.TextMatch.RelativePath.get -> string!
+Penghou.Luban.TextMatch.RelativePath.init -> void
+Penghou.Luban.TextMatch.TextMatch(string! RelativePath, int LineNumber, string! Line) -> void
+Penghou.Luban.WorkspaceReference
+Penghou.Luban.WorkspaceReference.Id.get -> string!
+Penghou.Luban.WorkspaceReference.Id.init -> void
+Penghou.Luban.WorkspaceReference.WorkspaceReference(string! Id) -> void
+static Penghou.Luban.Changes.FileChangeLimits.Default.get -> Penghou.Luban.Changes.FileChangeLimits!
+static Penghou.Luban.Changes.TextChangeOptions.Default.get -> Penghou.Luban.Changes.TextChangeOptions!
+static Penghou.Luban.Changes.TextChangeTransport.DecodeDiff(System.ReadOnlyMemory<byte> document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextChangeTransportDecodeResult<Penghou.Luban.Changes.DecodedTextDiff!>!
+static Penghou.Luban.Changes.TextChangeTransport.DecodeMerge(System.ReadOnlyMemory<byte> document, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextChangeTransportDecodeResult<Penghou.Luban.Changes.DecodedTextMerge!>!
+static Penghou.Luban.Changes.TextChangeTransport.EncodeDiff(Penghou.Luban.Changes.TextDiffResult? result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextChangeTransportEncodeResult!
+static Penghou.Luban.Changes.TextChangeTransport.EncodeMerge(Penghou.Luban.Changes.TextMergeResult? result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextChangeTransportEncodeResult!
+static Penghou.Luban.Changes.TextDiffEngine.Diff(string? before, string? after, Penghou.Luban.Changes.TextChangeOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextDiffResult!
+static Penghou.Luban.Changes.TextMergeEngine.Merge(string? base, string? ours, string? theirs, Penghou.Luban.Changes.TextChangeOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextMergeResult!
+static Penghou.Luban.Changes.TextUnifiedDiffOptions.Default.get -> Penghou.Luban.Changes.TextUnifiedDiffOptions!
+static Penghou.Luban.Changes.TextUnifiedDiffRenderer.Render(string? before, string? after, string? relativePath, Penghou.Luban.Changes.TextUnifiedDiffOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextUnifiedDiffResult!
+static Penghou.Luban.Changes.TextUnifiedImport.Materialize(Penghou.Luban.Changes.TextUnifiedPatchCandidate? candidate, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? originals, Penghou.Luban.Changes.TextUnifiedImportOptions? importOptions = null, Penghou.Luban.Changes.TextChangeOptions? textOptions = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextUnifiedMaterializationResult!
+static Penghou.Luban.Changes.TextUnifiedImport.Parse(string? unifiedDiff, Penghou.Luban.Changes.TextUnifiedImportOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Changes.TextUnifiedImportResult!
+static Penghou.Luban.Changes.TextUnifiedImportOptions.Default.get -> Penghou.Luban.Changes.TextUnifiedImportOptions!
+static Penghou.Luban.Changes.Utf8PatchMaterializer.Materialize(System.ReadOnlySpan<byte> original, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>! patches, int maximumOutputBytes, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> byte[]!
+static Penghou.Luban.Changes.Utf8PatchMaterializer.Materialize(System.ReadOnlySpan<byte> original, System.Collections.Generic.IReadOnlyList<Penghou.Luban.Changes.TextPatch!>! patches, Penghou.Luban.Changes.PatchLimits! limits, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> byte[]!
+static Penghou.Luban.FileEffectRuntimeOptions.Default.get -> Penghou.Luban.FileEffectRuntimeOptions!
+static Penghou.Luban.Language.LanguageCompiler.Compile(string! source, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Language.LanguageCompilerOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Language.LanguageCompilation!
+static Penghou.Luban.Language.LanguageCompiler.Compile(System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Penghou.Luban.Language.LanguageStage!>!>! statements, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Language.LanguageCompilerOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Language.LanguageCompilation!
+static Penghou.Luban.Language.LanguageGlob.CanDescend(string! glob, string! relativeDirectory, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> bool
+static Penghou.Luban.Language.LanguageGlob.IsMatch(string! glob, string! path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> bool
+static Penghou.Luban.Language.LanguageGlob.Normalize(string! glob) -> string!
+static Penghou.Luban.Language.LanguagePaths.Normalize(string! path, bool allowRoot = false) -> string!
+static Penghou.Luban.Language.LanguageToolRuntime.ToJson(Penghou.Luban.Language.LanguageToolCapabilities! capabilities) -> string!
+static Penghou.Luban.Language.LanguageToolRuntime.ToJson(Penghou.Luban.Language.LanguageToolResult! result) -> string!
+static Penghou.Luban.Resolution.PreviewCompiler.Compile(System.Collections.Generic.IReadOnlyList<Penghou.Luban.Resolution.PreviewStage!>! stages, Penghou.IO.Abstractions.WorkspaceId workspace, Penghou.Luban.Resolution.PreviewLimits? limits = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Penghou.Luban.Resolution.PreviewCompilation!

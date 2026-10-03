@@ -29,6 +29,10 @@ var diff = TextDiffEngine.Diff("before\n", "after\n");
 if (diff.Status != TextDiffStatus.Succeeded) throw new InvalidOperationException("Public text diff API failed.");
 _ = typeof(FileChangeRuntime);
 _ = typeof(FileChangeCaptureBridge);
+var patch = new TextPatch(0, 1, new byte[] { (byte)'b' });
+var materialized = Utf8PatchMaterializer.Materialize(new byte[] { (byte)'a' }, new[] { patch }, new PatchLimits(1, 1, 1));
+if (materialized[0] != (byte)'b' || typeof(TextPatch).Namespace != "Penghou.Luban.Changes" || typeof(PatchLimits).Namespace != "Penghou.Luban.Changes")
+    throw new InvalidOperationException("Final patch ownership/API failed.");
 var referenced = typeof(LanguageCompiler).Assembly.GetReferencedAssemblies().Select(a => a.Name ?? string.Empty);
 if (referenced.Any(n => n.StartsWith("Penghou.IO.Local", StringComparison.Ordinal) || n.StartsWith("Penghou.Hufu", StringComparison.Ordinal) || n.StartsWith("Penghou.Fuwen", StringComparison.Ordinal) || n.StartsWith("Penghou.Zhinu", StringComparison.Ordinal)))
     throw new InvalidOperationException("Luban core package has an out-of-bound assembly reference.");

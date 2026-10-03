@@ -30,6 +30,7 @@ textual mutation syntax, selected-glob execution, deferred tools, durable
 journaling and complete governed mutation adapters remain pending; the separate Hufu known-root read adapter is implemented. The [current read profile](read-language-profile.md)
 and [semantic IR profile](semantic-ir.md) describe the implemented versions.
 
+- [API stability](api-stability.md): final ownership, frozen signatures and build enforcement.
 - [File-change profile](file-change-profile.md): exact authorized observations, candidates and read-only validation.
 - [File-change application](file-change-application-profile.md): capture bridge and separate execution.
 - [Review-fix qualification](review-fixes-2026-10-02.md): corrected boundaries and 227-test validation on both runtimes.

@@ -23,11 +23,12 @@ into language/IR `2`, catalogue `windows-text-change-v2` and provider profile
 | D4 authorized file changes | Implemented; complete input-set admission, provider checks, versions/hashes/lengths, read-only validation and independently encoded candidate identity |
 | D5 application bridge | Implemented; fresh capture and exact candidate comparisons, single/batch application through existing host contracts, stale/denied/release/retained-data cases |
 | D6 language v2 | Implemented; diff/merge, line windows, search spans/context, typed JSON and unchanged v1 identities/shapes |
-| Windows conformance | **337 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
+| Windows conformance | **338 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
 | Package qualification | `.nupkg`/`.snupkg` inspection and isolated package-only consumer pass on both frameworks; exact IO closure, README/license and no Local/Hufu/Fuwen/Zhinu core reference |
-| Remote CI | [Run 37039062513](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37039062513) passes for `4bbbd84bbaaf7a3376f85fc1e59da3fd13901693`: Windows tests/sample/package consumer and Linux neutral-core build |
+| Remote CI | API-stabilized revision awaits its push/run. Previous feature baseline: [Run 37039062513](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37039062513) passes for `4bbbd84bbaaf7a3376f85fc1e59da3fd13901693`: Windows tests/sample/package consumer and Linux neutral-core build |
+| API compatibility | Final ownership/signature review and analyzer guard complete; additions/removals were deliberately rejected in negative qualification |
 | Public feed | Pending IO publication followed by Luban publication and public-feed restore qualification |
-| Consumer adoption | Hufu is next; see the [consumer impact guide](consumer-impact.md). Its integration does not block this feature baseline |
+| Consumer qualification | Hufu passes 101 tests per framework against the package, plus 19 staged IO integration cases per framework; v1 remains supported and v2 fails closed. Public-feed adoption remains a release gate |
 
 The test matrix covers real Windows Local reader/writer behavior. Native writes
 are qualified only for the explicit HostControlled NTFS namespace and remain
@@ -56,11 +57,11 @@ create/delete/move mutations, Git, shell/process access and workflow control flo
 are new scoped profiles. They are outside this initial baseline. New work must
 name its profile and consumer; it must not silently widen v1 or v2.
 
-Before a stable release, review the preview API with consumers and capture a
-public API compatibility baseline. The current preview is not a stable 1.0 ABI
-promise. Required changes from that review should be tracked explicitly rather
-than treating all possible future tooling as unfinished Luban work.
-
+The initial public API review, final patch namespace and checked-in compatibility
+baseline are complete; ordinary builds enforce the signatures on both frameworks.
+See the [API stability policy](api-stability.md). Consumer qualification records
+concrete findings without reopening all future tooling as unfinished Luban work.
+Public NuGet publication and public-feed adoption remain separate release gates.
 ## Reading and handoff order
 
 1. This ledger: completion boundary and evidence.

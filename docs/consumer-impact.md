@@ -24,11 +24,13 @@ evidence of publication or of public-feed availability.
 | Luban → Hufu integration | Constructor injection and optional v2 requests require consumer qualification; current Hufu uses a source project reference | Hufu replaces the reference with the qualified Luban package and runs its integration matrix |
 | Luban → other hosts | Required authorization/start/outcome contracts stay provider/policy neutral | The host qualifies its selected profiles; no generic ecosystem-wide adoption is claimed |
 
-TextPatch/PatchLimits/FilePatchRequest and UTF-8 patch materialization now belong
-in the Luban assembly. Their temporary namespace remains `Penghou.IO.Abstractions`
-for this coordinated, unpublished migration. Do not combine these candidates
-with an older IO assembly containing duplicate patch types. Future namespace/API
-changes require a versioned migration entry here.
+`TextPatch` and `PatchLimits` now live in `Penghou.Luban.Changes` in the Luban
+assembly; consumer imports must follow that final namespace. The unused legacy
+`FilePatchRequest` was removed before publication because no runtime accepted it.
+Do not mix these candidates with older IO assemblies containing patch types.
+The [API stability policy](api-stability.md) records the final ownership and
+checked-in signature baseline; future breaking changes require a versioned
+migration entry here.
 
 Complete release work in order: publish qualified IO packages, qualify and publish
 Luban from the public dependency feed, then adopt it in Hufu. The initial Luban
@@ -53,23 +55,25 @@ default until a consumer policy understands them; they do not require Hufu to
 ship a v2 implementation.
 
 Luban is a new package candidate, so no previously published Luban package ABI
-is being preserved by this preview. Before a stable package, generate and review
-a public API baseline, check compatibility across previews, and document any
-enum additions and source changes. In particular, append-only enum evolution
+is being preserved by this preview. The public API baseline is now checked in and enforced during builds. Review compatibility across previews and document any enum additions and source changes. In particular, append-only enum evolution
 does not guarantee that downstream exhaustive switches behave safely.
 
 ## Hufu as an optional consumer
 
-The inspected Hufu tree currently uses a project reference to Luban for its
-integration project; it has not adopted this package. Its read integration
-composes a Local provider and passes it to Luban runtimes. When Hufu chooses to
-consume the published package, its migration is to replace that project
-reference with an exact `Penghou.Luban` package version while retaining explicit
-provider and authority composition. Its Hufu-local Local provider/package use
-remains separate from Luban's core package.
+Hufu.Luban now selects exact `[0.1.0-preview.1]` PackageReference by default;
+`UseLubanSource=true` and `LubanRoot` retain explicit source-build composition.
+The original Hufu checkout passes **101 existing/Luban/Cedar/SQLite tests per
+framework** against the stabilized Luban package with a fresh cache. Its separate
+IO suite passes **19 per framework** in the staged qualification. Assets confirm
+Luban is a package and there is no Luban source project in that closure.
 
-Hufu should then run its own integration tests against the package, including
-the current `LanguageRuntime` composition call sites and authorization
-semantics. Its policy can continue consuming the v1 profile while separately
-deciding whether to support opt-in v2 requests. Hufu, its policy store, and
-Zhinu durability are not prerequisites for Luban's leaf package release.
+Both the concurrent read-v2 regression and the new diff-v2 regression are
+preserved. Hufu's current language policy deliberately accepts only v1 and
+rejects a genuine v2 document before authority lookup, evaluation or evidence
+recording. Supporting v2 in Hufu is a separately scoped policy feature; it does
+not require changing Luban's completed baseline.
+
+This proves candidate-package compatibility, not public-feed adoption. Hufu's
+provider, policy store and workflow/journal integration remain its own work.
+See [Hufu's qualification record](../../Penghou.Hufu/docs/luban-api-consumer-qualification.md)
+and the [API stability policy](api-stability.md).

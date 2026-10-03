@@ -1,6 +1,4 @@
 using System.Text;
-using Penghou.IO.Abstractions;
-
 namespace Penghou.Luban.Changes;
 
 /// <summary>Pure, bounded application of ordered UTF-8 byte-coordinate edits.</summary>
@@ -8,10 +6,12 @@ public static class Utf8PatchMaterializer
 {
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026", Justification = "Existing overloads have distinct required input types; their signatures and optional defaults are frozen by the public API baseline.")]
     public static byte[] Materialize(ReadOnlySpan<byte> original, IReadOnlyList<TextPatch> patches,
         int maximumOutputBytes, CancellationToken cancellationToken = default) =>
         Materialize(original, patches, new PatchLimits(128, 1024 * 1024, maximumOutputBytes), cancellationToken);
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026", Justification = "Existing overloads have distinct required input types; their signatures and optional defaults are frozen by the public API baseline.")]
     public static byte[] Materialize(ReadOnlySpan<byte> original, IReadOnlyList<TextPatch> patches,
         PatchLimits limits, CancellationToken cancellationToken = default)
     {

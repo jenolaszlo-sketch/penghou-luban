@@ -1,3 +1,4 @@
+using Penghou.Luban.Changes;
 using System.Text;
 using Penghou.IO.Abstractions;
 using Penghou.Luban.Language;

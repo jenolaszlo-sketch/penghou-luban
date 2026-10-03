@@ -1,3 +1,4 @@
+using Penghou.Luban.Changes;
 using System.Security.Cryptography;
 using System.Text;
 using Penghou.IO.Abstractions;

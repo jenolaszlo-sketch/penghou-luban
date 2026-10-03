@@ -72,7 +72,7 @@ Read APIs require an injected authorizer and have no permissive default. Replaci
 
 Language execution computes and returns observations and change proposals. It performs no writes. Applying a supported candidate uses the separate programmatic capture bridge and executor with fresh host admission and evidence. There are no textual apply/write commands.
 
-The current leaf qualification passes **337 tests on each of .NET 8 and .NET 10** on Windows. The [completion ledger](docs/leaf-completion.md) records feature, package and CI evidence; the [consumer impact guide](docs/consumer-impact.md) records dependency and migration work.
+The current leaf qualification passes **338 tests on each of .NET 8 and .NET 10** on Windows. The [completion ledger](docs/leaf-completion.md) records feature, package and CI evidence; the [consumer impact guide](docs/consumer-impact.md) records dependency and migration work.
 
 ## Preview, execution, and consistency
 

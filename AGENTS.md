@@ -63,3 +63,8 @@ Do not edit other repositories without task scope. API/package names in the
 source proposal are illustrative; Penghou.Luban is the selected project name.
 
 Read docs/diff-merge-spec.md, docs/text-change-profile.md and ADR 0005 before changing diff/merge behavior. Pure text computation must perform no I/O or implicitly approve/apply candidates. Preserve exact UTF-8 bytes/newlines, deterministic tie-breaking, shared merge budgets, byte-coordinate edits and explicit structured conflicts. File/import/application profiles remain separate gates; do not bypass capture/admission/execution or weaken mandatory original hash/version checks.
+
+Public API stability: read docs/api-stability.md and preserve PublicAPI.Shipped.txt.
+Ordinary builds enforce the baseline; future additions belong in PublicAPI.Unshipped.txt
+after review. TextPatch/PatchLimits use Penghou.Luban.Changes; the unused
+FilePatchRequest was removed before publication. Do not add legacy alias types.
