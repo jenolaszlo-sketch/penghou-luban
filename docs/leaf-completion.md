@@ -25,7 +25,7 @@ into language/IR `2`, catalogue `windows-text-change-v2` and provider profile
 | D6 language v2 | Implemented; diff/merge, line windows, search spans/context, typed JSON and unchanged v1 identities/shapes |
 | Windows conformance | **338 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
 | Package qualification | `.nupkg`/`.snupkg` inspection and isolated package-only consumer pass on both frameworks; exact IO closure, README/license and no Local/Hufu/Fuwen/Zhinu core reference |
-| Remote CI | API-stabilized revision awaits its push/run. Previous feature baseline: [Run 37039062513](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37039062513) passes for `4bbbd84bbaaf7a3376f85fc1e59da3fd13901693`: Windows tests/sample/package consumer and Linux neutral-core build |
+| Remote CI | [Run 37085937530](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37085937530) passes for `26f4ad943a0f4370627574c43d2a78bd2c14b54d`: Windows 338 tests per framework, sample/package consumer and Linux neutral-core build |
 | API compatibility | Final ownership/signature review and analyzer guard complete; additions/removals were deliberately rejected in negative qualification |
 | Public feed | Pending IO publication followed by Luban publication and public-feed restore qualification |
 | Consumer qualification | Hufu passes 101 tests per framework against the package, plus 19 staged IO integration cases per framework; v1 remains supported and v2 fails closed. Public-feed adoption remains a release gate |

@@ -21,7 +21,7 @@ evidence of publication or of public-feed availability.
 | --- | --- | --- |
 | IO.Abstractions + IO.Protocols → Luban | Exact `[0.1.0-preview.1]` package references; normal builds have no sibling source dependency | IO publishes its qualified candidates; Luban verifies public-feed restore |
 | IO.Local → host/sample/tests | Concrete reader/writer stays outside Luban core | Each host explicitly selects its provider and controlled write namespace |
-| Luban → Hufu integration | Constructor injection and optional v2 requests require consumer qualification; current Hufu uses a source project reference | Hufu replaces the reference with the qualified Luban package and runs its integration matrix |
+| Luban → Hufu integration | Exact candidate package reference and 101 tests per framework qualified; v2 fails closed | Hufu verifies public-feed adoption; any v2 policy support is separate work |
 | Luban → other hosts | Required authorization/start/outcome contracts stay provider/policy neutral | The host qualifies its selected profiles; no generic ecosystem-wide adoption is claimed |
 
 `TextPatch` and `PatchLimits` now live in `Penghou.Luban.Changes` in the Luban
@@ -55,7 +55,9 @@ default until a consumer policy understands them; they do not require Hufu to
 ship a v2 implementation.
 
 Luban is a new package candidate, so no previously published Luban package ABI
-is being preserved by this preview. The public API baseline is now checked in and enforced during builds. Review compatibility across previews and document any enum additions and source changes. In particular, append-only enum evolution
+is being preserved by this preview. The public API baseline is now checked in and enforced during builds.
+Review compatibility across previews and document any enum additions and source
+changes. In particular, append-only enum evolution
 does not guarantee that downstream exhaustive switches behave safely.
 
 ## Hufu as an optional consumer
