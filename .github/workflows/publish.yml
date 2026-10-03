@@ -5,11 +5,6 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: Existing version tag to validate and publish
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -19,17 +14,17 @@ env:
 
 jobs:
   validate:
-    name: Validate exact tagged release
+    name: Validate exact release commit
     runs-on: windows-latest
     outputs:
       package_version: ${{ steps.release-version.outputs.package_version }}
     permissions:
       contents: read
-    env:
-      MANUAL_RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - name: Checkout exact release ref
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -38,21 +33,20 @@ jobs:
             8.0.x
             10.0.x
 
-      - name: Verify tag matches the checked-in package version
+      - name: Resolve checked-in package version
         id: release-version
         shell: pwsh
         run: |
-          if ($env:GITHUB_REF_TYPE -ne 'tag') {
-            throw "Release publication must run from an existing version tag; selected ref is '$env:GITHUB_REF'."
+          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and $env:GITHUB_REF -ne 'refs/heads/main') {
+            throw "Manual publication must select main; selected ref is '$env:GITHUB_REF'."
+          }
+          if ($env:GITHUB_EVENT_NAME -ne 'workflow_dispatch' -and $env:GITHUB_REF_TYPE -ne 'tag') {
+            throw 'Release publication requires a manual run from main or a version tag.'
           }
           $version = (dotnet msbuild src/Penghou.Luban/Penghou.Luban.csproj -getProperty:PackageVersion -nologo).Trim()
-          if ($LASTEXITCODE -ne 0) { throw 'Could not read the checked-in package version.' }
-          $expectedTag = "v$version"
-          if ($env:GITHUB_REF_NAME -ne $expectedTag) {
-            throw "Tag '$env:GITHUB_REF_NAME' does not equal checked-in release tag '$expectedTag'."
-          }
-          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and $env:MANUAL_RELEASE_TAG -ne $env:GITHUB_REF_NAME) {
-            throw "Manual release tag '$env:MANUAL_RELEASE_TAG' does not equal selected ref '$env:GITHUB_REF_NAME'."
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($version)) { throw 'Could not read the checked-in package version.' }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Tag '$env:GITHUB_REF_NAME' does not match checked-in version '$version'."
           }
           "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "package_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
@@ -137,6 +131,8 @@ jobs:
     steps:
       - name: Checkout exact release ref
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -166,6 +162,8 @@ jobs:
     steps:
       - name: Checkout exact release ref
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -228,8 +226,29 @@ jobs:
           set -euo pipefail
           dotnet nuget push ./artifacts/package/*.snupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
 
+  verify-publication:
+    name: Verify public package after indexing
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact release ref
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Download the same validated package
+        uses: actions/download-artifact@v7
+        with:
+          name: release-packages-${{ github.sha }}
+          path: artifacts/package
       - name: Verify publicly available package bytes
         shell: pwsh
         env:
           PACKAGE_VERSION: ${{ needs.validate.outputs.package_version }}
-        run: ./eng/scripts/check-nuget-version.ps1 -PackageVersion $env:PACKAGE_VERSION -PackageDirectory ./artifacts/package -RequirePublished
+        run: ./eng/scripts/check-nuget-version.ps1 -PackageVersion $env:PACKAGE_VERSION -PackageDirectory ./artifacts/package -RequirePublished -IndexingTimeoutSeconds 3600 -RetryIntervalSeconds 30
