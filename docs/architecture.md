@@ -1,5 +1,13 @@
 # Architecture and ownership
 
+[Authority-Mediated Language Execution (AMLE)](authority-mediated-language-execution.md)
+names this shared architectural direction: Luban expresses and executes bounded
+semantic operations, Hufu mediates contextual authority, and trusted resource
+providers perform access. Semantic admission, concrete resource/start checks and
+result release remain distinct obligations. The guide links both products and
+separates the proposed pattern from current qualified profiles.
+
+
 Status: partial implementation. The repository provides a Windows path-based
 Read/Find/SearchText provider with a mandatory host-supplied authorizer, a
 separate exact-target patch executor, and a narrow 1–64 target batch executor

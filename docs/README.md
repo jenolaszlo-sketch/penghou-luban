@@ -1,5 +1,8 @@
 # Luban documentation
 
+Read the [Authority-Mediated Language Execution (AMLE) guide](authority-mediated-language-execution.md) for the shared pattern, complementary Luban/Hufu roles, and current implementation limits.
+
+
 Start with the [current language manual](language-manual.md) and [AI-tool host sample](../samples/AiToolHost/Program.cs). `LanguageToolRuntime` provides capability discovery and typed JSON results through a host-supplied authorizer. The [direct API profile](direct-api-profile.md) documents its admission/resource/release checks and cancellation bounds.
 
 The [typed-effect runtime](typed-effect-runtime.md) defines provider behavior and

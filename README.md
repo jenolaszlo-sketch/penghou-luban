@@ -6,6 +6,22 @@ Luban is designed primarily for AI tool usage and the security of those tool cal
 
 The host supplies the workspace, caller identity, authorization implementation, and execution services. Luban supplies the language, operation contracts and runtime checks; the host composes a qualified I/O provider. This makes the authorization boundary part of how operations run, rather than a convention the agent is expected to follow.
 
+## Authority-Mediated Language Execution
+
+Luban and [Hufu](../Penghou.Hufu/README.md) express the proposed
+**Authority-Mediated Language Execution (AMLE)** pattern: an agent requests effects
+through a constrained semantic language, and each protected effect is checked
+against contextual authority before a trusted resource adapter performs it.
+Luban supplies the language and runtime; Hufu supplies authority mediation;
+Penghou.IO supplies resource abstractions and providers. Hufu is optional in
+Luban, but host-supplied authorization is required.
+
+Read the [AMLE guide](docs/authority-mediated-language-execution.md) and
+[Hufu's complementary guide](../Penghou.Hufu/docs/authority-mediated-language-execution.md)
+for the shared pattern, evidence and future simulation direction. Current WhatIf
+is capture-only; complete governed mutation integration remains pending. AMLE
+does not replace OS isolation for opaque native execution.
+
 ## Why use it for AI tools
 
 An AI model can propose an operation, but that proposal is not permission to execute it. Luban gives the host a structured request it can validate and authorize before protected access. Unsupported operations fail explicitly; they do not fall back to a shell.
