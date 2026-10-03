@@ -3,6 +3,15 @@
 Updated 2026-10-03. Publish corrected IO first, then Luban, then verify Hufu
 against NuGet.org. Candidate artifacts and caches do not close public adoption.
 
+## Public IO checkpoint — 2026-10-03
+
+All three IO packages are available on NuGet.org at 0.1.0-preview.1.
+Luban restores from NuGet.org only into a new cache and passes 338 tests on each
+framework. Its isolated package consumer passes both frameworks with public IO.
+Luban is not yet listed on NuGet.org. The IO identity/publication steps below are
+completed; their original failed-run description is historical. Next release work
+is to tag/publish the qualified Luban source, then verify public Hufu adoption.
+
 ## Ready release tooling
 
 The tagged release workflow validates the checked-in version against the exact
@@ -18,7 +27,7 @@ The ordinary CI still uses the explicit pinned IO candidate feed. Switch that
 workflow to public IO restores after IO publication succeeds. Do not claim that
 existing candidate CI proves public adoption.
 
-## Qualified inputs and current blocker
+## Historical candidate inputs and publishing setup
 
 - IO tag v0.1.0-preview.1 is fixed at
   468dde33f0cda8f8f26a734abd0e512cea70d138.

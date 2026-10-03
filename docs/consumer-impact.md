@@ -19,7 +19,7 @@ evidence of publication or of public-feed availability.
 
 | Producer → consumer | Current impact | Owner / next check |
 | --- | --- | --- |
-| IO.Abstractions + IO.Protocols → Luban | Exact `[0.1.0-preview.1]` package references; normal builds have no sibling source dependency | IO publishes its qualified candidates; Luban verifies public-feed restore |
+| IO.Abstractions + IO.Protocols → Luban | Exact `[0.1.0-preview.1]` package references; normal builds have no sibling source dependency | IO 0.1.0-preview.1 is published; Luban public-only restore/tests and package consumer pass |
 | IO.Local → host/sample/tests | Concrete reader/writer stays outside Luban core | Each host explicitly selects its provider and controlled write namespace |
 | Luban → Hufu integration | Exact candidate package reference and 101 tests per framework qualified; v2 fails closed | Hufu verifies public-feed adoption; any v2 policy support is separate work |
 | Luban → other hosts | Required authorization/start/outcome contracts stay provider/policy neutral | The host qualifies its selected profiles; no generic ecosystem-wide adoption is claimed |
@@ -32,8 +32,8 @@ The [API stability policy](api-stability.md) records the final ownership and
 checked-in signature baseline; future breaking changes require a versioned
 migration entry here.
 
-Complete release work in order: publish qualified IO packages, qualify and publish
-Luban from the public dependency feed, then adopt it in Hufu. The initial Luban
+IO publication and Luban qualification against public IO are complete. Next,
+publish Luban from the public dependency feed, then verify public adoption in Hufu. The initial Luban
 feature baseline stays closed unless a concrete consumer finding requires a
 producer correction. Record that finding, the affected contract/profile and the
 consumers to requalify in this document.

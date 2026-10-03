@@ -23,18 +23,20 @@ into language/IR `2`, catalogue `windows-text-change-v2` and provider profile
 | D4 authorized file changes | Implemented; complete input-set admission, provider checks, versions/hashes/lengths, read-only validation and independently encoded candidate identity |
 | D5 application bridge | Implemented; fresh capture and exact candidate comparisons, single/batch application through existing host contracts, stale/denied/release/retained-data cases |
 | D6 language v2 | Implemented; diff/merge, line windows, search spans/context, typed JSON and unchanged v1 identities/shapes |
-| Windows conformance | **338 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact candidate IO packages |
+| Windows conformance | **338 passed, zero failed/skipped on each of net8.0 and net10.0**, Release, against exact published IO packages from a fresh NuGet.org-only cache |
 | Package qualification | `.nupkg`/`.snupkg` inspection and isolated package-only consumer pass on both frameworks; exact IO closure, README/license and no Local/Hufu/Fuwen/Zhinu core reference |
 | Remote CI | [Run 37085937530](https://github.com/jenolaszlo-sketch/penghou-luban/actions/runs/37085937530) passes for `26f4ad943a0f4370627574c43d2a78bd2c14b54d`: Windows 338 tests per framework, sample/package consumer and Linux neutral-core build |
 | API compatibility | Final ownership/signature review and analyzer guard complete; additions/removals were deliberately rejected in negative qualification |
-| Public feed | Pending IO publication followed by Luban publication and public-feed restore qualification |
+| Public feed | IO.Abstractions, IO.Protocols and IO.Local 0.1.0-preview.1 are published; fresh public-only Luban restore/tests and isolated consumer pass. Luban publication and downstream public-feed adoption remain pending |
 | Consumer qualification | Hufu passes 101 tests per framework against the package, plus 19 staged IO integration cases per framework; v1 remains supported and v2 fails closed. Public-feed adoption remains a release gate |
 
 The test matrix covers real Windows Local reader/writer behavior. Native writes
 are qualified only for the explicit HostControlled NTFS namespace and remain
 non-atomic. Linux CI qualifies compilation of the provider-neutral core, not
-Local behavior. Candidate feeds prove package closure without asserting NuGet.org
-availability.
+Local behavior. Candidate CI proves package closure. A separate fresh NuGet.org-only restore
+and 338 tests per framework now qualify the published IO dependencies; the Luban
+package-only consumer also passes both frameworks using public IO. Luban itself
+is still an unpublished candidate.
 
 ## Semantics that consumers must preserve
 
