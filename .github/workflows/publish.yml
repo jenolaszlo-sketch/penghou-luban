@@ -1,0 +1,235 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing version tag to validate and publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/.release-nuget-cache
+
+jobs:
+  validate:
+    name: Validate exact tagged release
+    runs-on: windows-latest
+    outputs:
+      package_version: ${{ steps.release-version.outputs.package_version }}
+    permissions:
+      contents: read
+    env:
+      MANUAL_RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - name: Checkout exact release ref
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Verify tag matches the checked-in package version
+        id: release-version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -ne 'tag') {
+            throw "Release publication must run from an existing version tag; selected ref is '$env:GITHUB_REF'."
+          }
+          $version = (dotnet msbuild src/Penghou.Luban/Penghou.Luban.csproj -getProperty:PackageVersion -nologo).Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the checked-in package version.' }
+          $expectedTag = "v$version"
+          if ($env:GITHUB_REF_NAME -ne $expectedTag) {
+            throw "Tag '$env:GITHUB_REF_NAME' does not equal checked-in release tag '$expectedTag'."
+          }
+          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and $env:MANUAL_RELEASE_TAG -ne $env:GITHUB_REF_NAME) {
+            throw "Manual release tag '$env:MANUAL_RELEASE_TAG' does not equal selected ref '$env:GITHUB_REF_NAME'."
+          }
+          "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "package_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Restore solution from NuGet.org only
+        run: dotnet restore Penghou.Luban.sln --source https://api.nuget.org/v3/index.json --no-cache -p:UsePenghouSource=false
+
+      - name: Test .NET 8
+        shell: pwsh
+        run: |
+          dotnet test Penghou.Luban.sln --configuration Release --framework net8.0 --no-restore --results-directory artifacts/test-net8 --logger 'trx;LogFileName=tests.trx'
+          if ($LASTEXITCODE -ne 0) { throw 'The .NET 8 test run failed.' }
+          $result = [xml](Get-Content -LiteralPath artifacts/test-net8/tests.trx -Raw)
+          $counts = $result.TestRun.ResultSummary.Counters
+          $total = [int]$counts.total
+          $passed = [int]$counts.passed
+          $failed = [int]$counts.failed
+          $notExecuted = [int]$counts.notExecuted
+          $skipped = if ($counts.skipped) { [int]$counts.skipped } else { 0 }
+          if ($total -le 0 -or $passed -ne $total -or $failed -ne 0 -or $notExecuted -ne 0 -or $skipped -ne 0) {
+            throw "Expected a nonempty .NET 8 test run with all cases passed and none failed or skipped; got total=$total, passed=$passed, failed=$failed, notExecuted=$notExecuted, skipped=$skipped."
+          }
+
+      - name: Test .NET 10
+        shell: pwsh
+        run: |
+          dotnet test Penghou.Luban.sln --configuration Release --framework net10.0 --no-restore --results-directory artifacts/test-net10 --logger 'trx;LogFileName=tests.trx'
+          if ($LASTEXITCODE -ne 0) { throw 'The .NET 10 test run failed.' }
+          $result = [xml](Get-Content -LiteralPath artifacts/test-net10/tests.trx -Raw)
+          $counts = $result.TestRun.ResultSummary.Counters
+          $total = [int]$counts.total
+          $passed = [int]$counts.passed
+          $failed = [int]$counts.failed
+          $notExecuted = [int]$counts.notExecuted
+          $skipped = if ($counts.skipped) { [int]$counts.skipped } else { 0 }
+          if ($total -le 0 -or $passed -ne $total -or $failed -ne 0 -or $notExecuted -ne 0 -or $skipped -ne 0) {
+            throw "Expected a nonempty .NET 10 test run with all cases passed and none failed or skipped; got total=$total, passed=$passed, failed=$failed, notExecuted=$notExecuted, skipped=$skipped."
+          }
+
+      - name: Restore package-backed host sample from NuGet.org only
+        run: dotnet restore samples/AiToolHost/AiToolHost.csproj --source https://api.nuget.org/v3/index.json --no-cache -p:UsePenghouSource=false
+
+      - name: Build package-backed host sample on .NET 8
+        run: dotnet build samples/AiToolHost/AiToolHost.csproj --configuration Release --framework net8.0 --no-restore -p:UsePenghouSource=false
+
+      - name: Build package-backed host sample on .NET 10
+        run: dotnet build samples/AiToolHost/AiToolHost.csproj --configuration Release --framework net10.0 --no-restore -p:UsePenghouSource=false
+
+      - name: Pack exact validated release version
+        shell: pwsh
+        run: |
+          dotnet pack src/Penghou.Luban/Penghou.Luban.csproj --configuration Release --no-restore --output artifacts/package -p:PackageVersion=$env:PACKAGE_VERSION -p:UsePenghouSource=false
+          if ($LASTEXITCODE -ne 0) { throw 'Packing Penghou.Luban failed.' }
+
+      - name: Verify package identity and contents
+        shell: pwsh
+        run: ./eng/scripts/verify-luban-package.ps1 -PackageDirectory ./artifacts/package -Version $env:PACKAGE_VERSION
+
+      - name: Check existing NuGet version against validated package bytes
+        shell: pwsh
+        run: ./eng/scripts/check-nuget-version.ps1 -PackageVersion $env:PACKAGE_VERSION -PackageDirectory ./artifacts/package
+
+      - name: Prove isolated package-only consumption using public IO packages
+        shell: pwsh
+        run: ./eng/scripts/smoke-package-consumer.ps1 -PackageDirectory ./artifacts/package -Version $env:PACKAGE_VERSION
+
+      - name: Upload validated release packages
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-packages-${{ github.sha }}
+          path: |
+            artifacts/package/*.nupkg
+            artifacts/package/*.snupkg
+          if-no-files-found: error
+          retention-days: 7
+
+  neutral-release-check:
+    name: Verify provider-neutral core on Linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact release ref
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore core from NuGet.org only
+        run: dotnet restore src/Penghou.Luban/Penghou.Luban.csproj --source https://api.nuget.org/v3/index.json --no-cache -p:UsePenghouSource=false
+
+      - name: Build provider-neutral core on .NET 8 and .NET 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build src/Penghou.Luban/Penghou.Luban.csproj --configuration Release --framework net8.0 --no-restore -p:UsePenghouSource=false
+          dotnet build src/Penghou.Luban/Penghou.Luban.csproj --configuration Release --framework net10.0 --no-restore -p:UsePenghouSource=false
+
+  publish:
+    name: Publish validated package
+    needs: [validate, neutral-release-check]
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout exact release ref
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download validated package
+        uses: actions/download-artifact@v7
+        with:
+          name: release-packages-${{ github.sha }}
+          path: artifacts/package
+
+      - name: Require exact package and symbol package
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.validate.outputs.package_version }}
+        run: |
+          set -euo pipefail
+          test "$(find artifacts/package -maxdepth 1 -name '*.nupkg' ! -name '*.snupkg' | wc -l)" -eq 1
+          test "$(find artifacts/package -maxdepth 1 -name '*.snupkg' | wc -l)" -eq 1
+          test -f "artifacts/package/Penghou.Luban.${PACKAGE_VERSION}.nupkg"
+          test -f "artifacts/package/Penghou.Luban.${PACKAGE_VERSION}.snupkg"
+
+      - name: Check any existing NuGet version against these exact validated package bytes
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.validate.outputs.package_version }}
+        run: ./eng/scripts/check-nuget-version.ps1 -PackageVersion $env:PACKAGE_VERSION -PackageDirectory ./artifacts/package
+
+      - name: Require NuGet OIDC identity configuration
+        shell: bash
+        env:
+          NUGET_USER: ${{ secrets.NUGET_USER }}
+        run: |
+          if [ -z "$NUGET_USER" ]; then
+            echo "The nuget GitHub environment must define secret NUGET_USER, and the NuGet account must trust this repository/workflow/environment as an OIDC publisher." >&2
+            exit 1
+          fi
+
+      - name: NuGet login (OIDC to temporary API key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push validated package
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          PACKAGE_VERSION: ${{ needs.validate.outputs.package_version }}
+        run: |
+          set -euo pipefail
+          dotnet nuget push "./artifacts/package/Penghou.Luban.${PACKAGE_VERSION}.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --no-symbols --skip-duplicate
+
+      - name: Push symbols
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          set -euo pipefail
+          dotnet nuget push ./artifacts/package/*.snupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+
+      - name: Verify publicly available package bytes
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.validate.outputs.package_version }}
+        run: ./eng/scripts/check-nuget-version.ps1 -PackageVersion $env:PACKAGE_VERSION -PackageDirectory ./artifacts/package -RequirePublished
